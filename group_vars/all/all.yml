@@ -1,0 +1,6 @@
+domain: "example.com"             # mydomain.test
+ntp_timezone: "UTC"
+pcs_password: "strong_pass" # cluster user: hacluster
+cluster_name: "hacluster"
+subnet_cidrs: "{ 10.10.10.0/24, }"
+

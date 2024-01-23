@@ -1,0 +1,82 @@
+---
+- hosts: all
+  become: true
+  serial: 5
+  tasks:
+    - name: Set hostname
+      ansible.builtin.hostname:
+        name: "{{ inventory_hostname }}.{{ domain }}"
+
+    - name: Add my own IP address to /etc/hosts instead localhost
+      ansible.builtin.replace:
+        path: "/etc/hosts"
+        regexp: '^127\.0\.0\.1(\s+){{ inventory_hostname }}(\s+){{ inventory_hostname }}.*'
+        replace: "{{ ansible_host }} {{ inventory_hostname }}.{{ domain }} {{ inventory_hostname }}"
+
+    - name: Hosts | populate inventory into hosts file
+      ansible.builtin.blockinfile:
+        dest: /etc/hosts
+        block: |-
+          {% for item in groups['all'] %}
+          {{ hostvars[item]['ip'] }} {{ item }}.{{ domain }} {{ item }}
+          {% endfor %}
+        state: present
+        create: true
+        backup: true
+        marker: "# Ansible inventory hosts {mark}"
+      #when: populate_inventory_to_hosts_file
+
+- hosts: all
+  become: true
+  serial: 5
+  roles:
+    - { role: chrony, tags: chrony_tag }
+
+- hosts: jump_servers
+  #remote_user: cloud-user
+  become: true
+  serial: 5
+  roles:
+    - { role: jump-servers, tags: jump-servers_tag }
+
+- hosts: db_servers
+  #remote_user: cloud-user
+  become: true
+  serial: 5
+  roles:
+    - { role: db-servers, tags: db-servers_tag }
+
+- hosts: iscsi_servers
+  #remote_user: cloud-user
+  become: true
+  serial: 5
+  roles:
+    - { role: iscsi-servers, tags: iscsi-servers_tag }
+
+- hosts: backend_servers
+  #remote_user: cloud-user
+  become: true
+  serial: 5
+  roles:
+    - { role: backend-servers, tags: backend-servers_tag }
+    - { role: wordpress, tags: wordpress_tag }
+
+#- hosts: haproxy_servers
+#  #remote_user: cloud-user
+#  become: true
+#  serial: 5
+#  roles:
+#    - { role: haproxy-servers, tags: haproxy-servers_tag }
+
+- hosts: nginx_servers
+  #remote_user: cloud-user
+  become: true
+  serial: 5
+  roles:
+    - { role: nginx-servers, tags: nginx-servers_tag }
+
+- hosts: consul_servers,nginx_servers,backend_servers
+  become: true
+  serial: 5
+  roles:
+    - { role: consul, tags: consul_tag }

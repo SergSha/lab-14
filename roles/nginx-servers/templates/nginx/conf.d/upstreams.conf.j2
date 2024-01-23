@@ -1,0 +1,5 @@
+upstream @backend {
+{% for item in groups.backend_servers %}
+        server {{ hostvars[item].ansible_host }}:8080 max_fails=1;
+{% endfor %}
+}
