@@ -1,7 +1,7 @@
-output "jump-servers-info" {
+output "jump-info" {
   description = "General information about created VMs"
   value = {
-    for vm in data.yandex_compute_instance.jump-servers :
+    for vm in data.yandex_compute_instance.jump :
     vm.name => {
       ip_address     = vm.network_interface.*.ip_address
       nat_ip_address = vm.network_interface.*.nat_ip_address
@@ -9,10 +9,10 @@ output "jump-servers-info" {
   }
 }
 
-output "db-servers-info" {
+output "osd-info" {
   description = "General information about created VMs"
   value = {
-    for vm in data.yandex_compute_instance.db-servers :
+    for vm in data.yandex_compute_instance.osd :
     vm.name => {
       ip_address     = vm.network_interface.*.ip_address
       nat_ip_address = vm.network_interface.*.nat_ip_address
@@ -20,10 +20,10 @@ output "db-servers-info" {
   }
 }
 
-output "iscsi-servers-info" {
+output "mds-info" {
   description = "General information about created VMs"
   value = {
-    for vm in data.yandex_compute_instance.iscsi-servers :
+    for vm in data.yandex_compute_instance.mds :
     vm.name => {
       ip_address     = vm.network_interface.*.ip_address
       nat_ip_address = vm.network_interface.*.nat_ip_address
@@ -31,32 +31,10 @@ output "iscsi-servers-info" {
   }
 }
 
-output "backend-servers-info" {
+output "mon-info" {
   description = "General information about created VMs"
   value = {
-    for vm in data.yandex_compute_instance.backend-servers :
-    vm.name => {
-      ip_address     = vm.network_interface.*.ip_address
-      nat_ip_address = vm.network_interface.*.nat_ip_address
-    }
-  }
-}
-
-output "nginx-servers-info" {
-  description = "General information about created VMs"
-  value = {
-    for vm in data.yandex_compute_instance.nginx-servers :
-    vm.name => {
-      ip_address     = vm.network_interface.*.ip_address
-      nat_ip_address = vm.network_interface.*.nat_ip_address
-    }
-  }
-}
-
-output "consul-servers-info" {
-  description = "General information about created VMs"
-  value = {
-    for vm in data.yandex_compute_instance.consul-servers :
+    for vm in data.yandex_compute_instance.mon :
     vm.name => {
       ip_address     = vm.network_interface.*.ip_address
       nat_ip_address = vm.network_interface.*.nat_ip_address

@@ -31,12 +31,11 @@ locals {
 
   #subnet_cidrs  = ["10.10.50.0/24"]
   #subnet_name   = "my_vpc_subnet"
-  jump_count     = "0"
-  db_count       = "1"
-  iscsi_count    = "1"
-  backend_count  = "2"
-  nginx_count    = "2"
-  consul_count   = "3"
+  jump_count  = "1"
+  osd_count   = "5"
+  mds_count   = "1"
+  mon_count   = "3"
+  disks_count = "3"
   /*
   disk = {
     "web" = {
@@ -46,11 +45,11 @@ locals {
   */
 }
 
-resource "yandex_resourcemanager_folder" "folders" {
-  for_each = local.folders
-  name     = each.key
-  cloud_id = var.cloud_id
-}
+#resource "yandex_resourcemanager_folder" "folders" {
+#  for_each = local.folders
+#  name     = each.key
+#  cloud_id = var.cloud_id
+#}
 
 #data "yandex_resourcemanager_folder" "folders" {
 #  for_each   = yandex_resourcemanager_folder.folders
@@ -113,7 +112,7 @@ resource "yandex_vpc_route_table" "rt" {
   }
 }
 
-module "jump-servers" {
+module "jump" {
   source         = "./modules/instances"
   count          = local.jump_count
   vm_name        = "jump-${format("%02d", count.index + 1)}"
@@ -136,17 +135,77 @@ module "jump-servers" {
   depends_on     = [yandex_compute_disk.disks]
 }
 
-data "yandex_compute_instance" "jump-servers" {
-  count      = length(module.jump-servers)
-  name       = module.jump-servers[count.index].vm_name
+data "yandex_compute_instance" "jump" {
+  count      = length(module.jump)
+  name       = module.jump[count.index].vm_name
   #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
-  depends_on = [module.jump-servers]
+  depends_on = [module.jump]
 }
 
-module "db-servers" {
+module "mds" {
   source         = "./modules/instances"
-  count          = local.db_count
-  vm_name        = "db-${format("%02d", count.index + 1)}"
+  count          = local.mds_count
+  vm_name        = "mds-${format("%02d", count.index + 1)}"
+  vpc_name       = local.vpc_name
+  #folder_id      = yandex_resourcemanager_folder.folders["lab-folder"].id
+  network_interface = {
+    for subnet in yandex_vpc_subnet.subnets :
+    subnet.name => {
+      subnet_id = subnet.id
+      #nat       = true
+    }
+    if subnet.name == "lab-subnet" #|| subnet.name == "backend-subnet"
+  }
+  #subnet_cidrs   = yandex_vpc_subnet.subnet.v4_cidr_blocks
+  #subnet_name    = yandex_vpc_subnet.subnet.name
+  #subnet_id      = yandex_vpc_subnet.subnet.id
+  vm_user        = local.vm_user
+  ssh_public_key = local.ssh_public_key
+  secondary_disk = {}
+  depends_on = [yandex_compute_disk.disks]
+}
+
+data "yandex_compute_instance" "mds" {
+  count      = length(module.mds)
+  name       = module.mds[count.index].vm_name
+  #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
+  depends_on = [module.mds]
+}
+
+module "mon" {
+  source         = "./modules/instances"
+  count          = local.mon_count
+  vm_name        = "nginx-${format("%02d", count.index + 1)}"
+  vpc_name       = local.vpc_name
+  #folder_id      = yandex_resourcemanager_folder.folders["lab-folder"].id
+  network_interface = {
+    for subnet in yandex_vpc_subnet.subnets :
+    subnet.name => {
+      subnet_id = subnet.id
+      #nat       = true
+    }
+    if subnet.name == "lab-subnet" #|| subnet.name == "nginx-subnet"
+  }
+  #subnet_cidrs   = yandex_vpc_subnet.subnet.v4_cidr_blocks
+  #subnet_name    = yandex_vpc_subnet.subnet.name
+  #subnet_id      = yandex_vpc_subnet.subnet.id
+  vm_user        = local.vm_user
+  ssh_public_key = local.ssh_public_key
+  secondary_disk = {}
+  depends_on     = [yandex_compute_disk.disks]
+}
+
+data "yandex_compute_instance" "mon" {
+  count      = length(module.mon)
+  name       = module.mon[count.index].vm_name
+  #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
+  depends_on = [module.mon]
+}
+
+module "osd" {
+  source         = "./modules/instances"
+  count          = local.osd_count
+  vm_name        = "osd-${format("%02d", count.index + 1)}"
   vpc_name       = local.vpc_name
   #folder_id      = yandex_resourcemanager_folder.folders["lab-folder"].id
   network_interface = {
@@ -162,163 +221,26 @@ module "db-servers" {
   #subnet_id      = yandex_vpc_subnet.subnet.id
   vm_user        = local.vm_user
   ssh_public_key = local.ssh_public_key
-  secondary_disk = {}
-  depends_on     = [yandex_compute_disk.disks]
-}
-
-data "yandex_compute_instance" "db-servers" {
-  count      = length(module.db-servers)
-  name       = module.db-servers[count.index].vm_name
-  #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
-  depends_on = [module.db-servers]
-}
-
-module "iscsi-servers" {
-  source         = "./modules/instances"
-  count          = local.iscsi_count
-  vm_name        = "iscsi-${format("%02d", count.index + 1)}"
-  vpc_name       = local.vpc_name
-  #folder_id      = yandex_resourcemanager_folder.folders["lab-folder"].id
-  network_interface = {
-    for subnet in yandex_vpc_subnet.subnets :
-    subnet.name => {
-      subnet_id = subnet.id
-      #nat       = true
-    }
-    if subnet.name == "lab-subnet" #|| subnet.name == "backend-subnet"
-  }
-  #subnet_cidrs   = yandex_vpc_subnet.subnet.v4_cidr_blocks
-  #subnet_name    = yandex_vpc_subnet.subnet.name
-  #subnet_id      = yandex_vpc_subnet.subnet.id
-  vm_user        = local.vm_user
-  ssh_public_key = local.ssh_public_key
   secondary_disk = {
+    #disk_id = yandex_compute_disk.disks[count.index * local.disks_count + secondary_disk.value].id
+    #name    = "osd-${format("%02d", floor(count.index / local.disks_count) + 1)}-disk-${format("%02d", count.index % local.disks_count + 1)}"
+    
     for disk in yandex_compute_disk.disks :
     disk.name => {
       disk_id = disk.id
       #"auto_delete" = true
       #"mode"        = "READ_WRITE"
     }
-    if disk.name == "web-${format("%02d", count.index + 1)}"
+    if "${substr(disk.name,0,6)}" == "osd-${format("%02d", count.index + 1)}"
   }
-  depends_on = [yandex_compute_disk.disks]
-}
-
-data "yandex_compute_instance" "iscsi-servers" {
-  count      = length(module.iscsi-servers)
-  name       = module.iscsi-servers[count.index].vm_name
-  #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
-  depends_on = [module.iscsi-servers]
-}
-
-module "backend-servers" {
-  source         = "./modules/instances"
-  count          = local.backend_count
-  vm_name        = "backend-${format("%02d", count.index + 1)}"
-  vpc_name       = local.vpc_name
-  #folder_id      = yandex_resourcemanager_folder.folders["lab-folder"].id
-  network_interface = {
-    for subnet in yandex_vpc_subnet.subnets :
-    subnet.name => {
-      subnet_id = subnet.id
-      #nat       = true
-    }
-    if subnet.name == "lab-subnet" #|| subnet.name == "backend-subnet"
-  }
-  #subnet_cidrs   = yandex_vpc_subnet.subnet.v4_cidr_blocks
-  #subnet_name    = yandex_vpc_subnet.subnet.name
-  #subnet_id      = yandex_vpc_subnet.subnet.id
-  vm_user        = local.vm_user
-  ssh_public_key = local.ssh_public_key
-  secondary_disk = {}
-  depends_on = [yandex_compute_disk.disks]
-}
-
-data "yandex_compute_instance" "backend-servers" {
-  count      = length(module.backend-servers)
-  name       = module.backend-servers[count.index].vm_name
-  #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
-  depends_on = [module.backend-servers]
-}
-
-module "nginx-servers" {
-  source         = "./modules/instances"
-  count          = local.nginx_count
-  vm_name        = "nginx-${format("%02d", count.index + 1)}"
-  vpc_name       = local.vpc_name
-  #folder_id      = yandex_resourcemanager_folder.folders["lab-folder"].id
-  network_interface = {
-    for subnet in yandex_vpc_subnet.subnets :
-    subnet.name => {
-      subnet_id = subnet.id
-      nat       = true
-    }
-    if subnet.name == "lab-subnet" #|| subnet.name == "nginx-subnet"
-  }
-  #subnet_cidrs   = yandex_vpc_subnet.subnet.v4_cidr_blocks
-  #subnet_name    = yandex_vpc_subnet.subnet.name
-  #subnet_id      = yandex_vpc_subnet.subnet.id
-  vm_user        = local.vm_user
-  ssh_public_key = local.ssh_public_key
-  secondary_disk = {}
   depends_on     = [yandex_compute_disk.disks]
 }
 
-data "yandex_compute_instance" "nginx-servers" {
-  count      = length(module.nginx-servers)
-  name       = module.nginx-servers[count.index].vm_name
+data "yandex_compute_instance" "osd" {
+  count      = length(module.osd)
+  name       = module.osd[count.index].vm_name
   #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
-  depends_on = [module.nginx-servers]
-}
-
-module "consul-servers" {
-  source         = "./modules/instances"
-  count          = local.consul_count
-  vm_name        = "consul-${format("%02d", count.index + 1)}"
-  cpu            = 2
-  memory         = 2
-  vpc_name       = local.vpc_name
-  #folder_id      = yandex_resourcemanager_folder.folders["lab-folder"].id
-  network_interface = {
-    for subnet in yandex_vpc_subnet.subnets :
-    subnet.name => {
-      subnet_id = subnet.id
-      #nat       = true
-    }
-    if subnet.name == "lab-subnet" #|| subnet.name == "nginx-subnet"
-  }
-  #subnet_cidrs   = yandex_vpc_subnet.subnet.v4_cidr_blocks
-  #subnet_name    = yandex_vpc_subnet.subnet.name
-  #subnet_id      = yandex_vpc_subnet.subnet.id
-  vm_user        = local.vm_user
-  ssh_public_key = local.ssh_public_key
-  secondary_disk = {}
-  depends_on     = [yandex_compute_disk.disks]
-}
-
-data "yandex_compute_instance" "consul-servers" {
-  count      = length(module.consul-servers)
-  name       = module.consul-servers[count.index].vm_name
-  #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
-  depends_on = [module.consul-servers]
-}
-
-resource "local_file" "inventory_file" {
-  content = templatefile("${path.module}/templates/inventory.tpl",
-    {
-      jump-servers    = data.yandex_compute_instance.jump-servers
-      db-servers      = data.yandex_compute_instance.db-servers
-      iscsi-servers   = data.yandex_compute_instance.iscsi-servers
-      backend-servers = data.yandex_compute_instance.backend-servers
-      nginx-servers   = data.yandex_compute_instance.nginx-servers
-      consul-servers  = data.yandex_compute_instance.consul-servers
-      remote_user     = local.vm_user
-      domain_name     = var.domain_name
-      domain_org      = var.domain_org
-      domain_token    = var.yc_token
-    }
-  )
-  filename = "${path.module}/inventory.ini"
+  depends_on = [module.osd]
 }
 #resource "yandex_compute_disk" "disks" {
 #  for_each  = local.disks
@@ -329,8 +251,8 @@ resource "local_file" "inventory_file" {
 #}
 
 resource "yandex_compute_disk" "disks" {
-  count     = local.iscsi_count
-  name      = "web-${format("%02d", count.index + 1)}"
+  count     = local.osd_count * local.disks_count
+  name      = "osd-${format("%02d", floor(count.index / local.disks_count) + 1)}-disk-${format("%02d", count.index % local.disks_count + 1)}"
   #folder_id = yandex_resourcemanager_folder.folders["lab-folder"].id
   size      = "1"
   zone      = var.zone
@@ -342,6 +264,20 @@ resource "yandex_compute_disk" "disks" {
 #  #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
 #  depends_on = [yandex_compute_disk.disks]
 #}
+
+resource "local_file" "inventory_file" {
+  content = templatefile("${path.module}/templates/inventory.tpl",
+    {
+      jump        = data.yandex_compute_instance.jump
+      osd         = data.yandex_compute_instance.osd
+      mds         = data.yandex_compute_instance.mds
+      mon         = data.yandex_compute_instance.mon
+      remote_user = local.vm_user
+      domain_name = var.domain_name
+    }
+  )
+  filename = "${path.module}/inventory.ini"
+}
 /*
 resource "yandex_lb_target_group" "webservers" {
   name      = "webservers-group"
@@ -349,7 +285,7 @@ resource "yandex_lb_target_group" "webservers" {
   #folder_id = yandex_resourcemanager_folder.folders["lab-folder"].id
 
   dynamic "target" {
-    for_each = data.yandex_compute_instance.nginx-servers[*].network_interface.0.ip_address
+    for_each = data.yandex_compute_instance.mon[*].network_interface.0.ip_address
     content {
       subnet_id = yandex_vpc_subnet.subnets["lab-subnet"].id
       address   = target.value
@@ -363,7 +299,7 @@ resource "yandex_lb_target_group" "dashboards" {
   #folder_id = yandex_resourcemanager_folder.folders["lab-folder"].id
 
   dynamic "target" {
-    for_each = data.yandex_compute_instance.jump-servers[*].network_interface.0.ip_address
+    for_each = data.yandex_compute_instance.jump[*].network_interface.0.ip_address
     content {
       subnet_id = yandex_vpc_subnet.subnets["lab-subnet"].id
       address   = target.value
@@ -421,13 +357,13 @@ data "yandex_lb_network_load_balancer" "mylb" {
 }
 */
 /*
-resource "null_resource" "nginx-servers" {
+resource "null_resource" "mon" {
 
-  count = length(module.nginx-servers)
+  count = length(module.mon)
 
   # Changes to the instance will cause the null_resource to be re-executed
   triggers = {
-    name = module.nginx-servers[count.index].vm_name
+    name = module.mon[count.index].vm_name
   }
 
   
@@ -442,26 +378,26 @@ resource "null_resource" "nginx-servers" {
     type        = "ssh"
     user        = local.vm_user
     private_key = file(local.ssh_private_key)
-    host        = "${module.nginx-servers[count.index].instance_external_ip_address}"
+    host        = "${module.mon[count.index].instance_external_ip_address}"
   }
 
   # Note that the -i flag expects a comma separated list, so the trailing comma is essential!
 
   provisioner "local-exec" {
-    command = "ansible-playbook -u '${local.vm_user}' --private-key '${local.ssh_private_key}' --become -i ./inventory.ini -l '${module.nginx-servers[count.index].instance_external_ip_address},' provision.yml"
-    #command = "ansible-playbook provision.yml -u '${local.vm_user}' --private-key '${local.ssh_private_key}' --become -i '${element(module.nginx-servers.nat_ip_address, 0)},' "
+    command = "ansible-playbook -u '${local.vm_user}' --private-key '${local.ssh_private_key}' --become -i ./inventory.ini -l '${module.mon[count.index].instance_external_ip_address},' provision.yml"
+    #command = "ansible-playbook provision.yml -u '${local.vm_user}' --private-key '${local.ssh_private_key}' --become -i '${element(module.mon.nat_ip_address, 0)},' "
   }
   
 }
 */
 /*
-resource "null_resource" "backend-servers" {
+resource "null_resource" "mds" {
 
-  count = length(module.backend-servers)
+  count = length(module.mds)
 
   # Changes to the instance will cause the null_resource to be re-executed
   triggers = {
-    name = "${module.backend-servers[count.index].vm_name}"
+    name = "${module.mds[count.index].vm_name}"
   }
 
   # Running the remote provisioner like this ensures that ssh is up and running
@@ -475,14 +411,14 @@ resource "null_resource" "backend-servers" {
     type        = "ssh"
     user        = local.vm_user
     private_key = file(local.ssh_private_key)
-    host        = "${module.backend-servers[count.index].instance_external_ip_address}"
+    host        = "${module.mds[count.index].instance_external_ip_address}"
   }
 
   # Note that the -i flag expects a comma separated list, so the trailing comma is essential!
 
   provisioner "local-exec" {
-    command = "ansible-playbook -u '${local.vm_user}' --private-key '${local.ssh_private_key}' --become -i '${module.backend-servers[count.index].instance_external_ip_address},' provision.yml"
-    #command = "ansible-playbook provision.yml -u '${local.vm_user}' --private-key '${local.ssh_private_key}' --become -i '${element(module.backend-servers.nat_ip_address, 0)},' "
+    command = "ansible-playbook -u '${local.vm_user}' --private-key '${local.ssh_private_key}' --become -i '${module.mds[count.index].instance_external_ip_address},' provision.yml"
+    #command = "ansible-playbook provision.yml -u '${local.vm_user}' --private-key '${local.ssh_private_key}' --become -i '${element(module.mds.nat_ip_address, 0)},' "
   }
 }
 */

@@ -56,7 +56,7 @@ variable "memory" {
 
 variable "core_fraction" {
   description = "Core fraction, default 100%"
-  default     = 100
+  default     = 50
   type        = number
 }
 
@@ -96,17 +96,17 @@ variable "allow_stopping_for_update" {
 #  type        = string
 #}
 
-#variable "image_id" {
-#  description = "Default image ID AlmaLinux 9"
-#  default     = "fd8cvn7c0lb5ub3ip3kn" # almalinux-9-v20230911
-#  type        = string
-#}
-
 variable "image_id" {
-  description = "Default image ID AlmaLinux 8"
-  default     = "fd84itfojin92kj38vmb" # almalinux-8-v20230925
+  description = "Default image ID AlmaLinux 9"
+  default     = "fd8cvn7c0lb5ub3ip3kn" # almalinux-9-v20230911
   type        = string
 }
+
+#variable "image_id" {
+#  description = "Default image ID AlmaLinux 8"
+#  default     = "fd84itfojin92kj38vmb" # almalinux-8-v20230925
+#  type        = string
+#}
 
 #variable "image_id" {
 #  description = "Default image ID CentOS 7"

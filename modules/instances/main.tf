@@ -76,13 +76,3 @@ resource "yandex_compute_instance" "instances" {
   }
 */
 }
-/*
-resource "local_file" "inventory_file" {
-  content = templatefile("./templates/inventory.tpl",
-    {
-      instances = yandex_compute_instance.instances
-    }
-  )
-  filename = "./inventory.ini"
-}
-*/
