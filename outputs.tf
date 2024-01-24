@@ -9,10 +9,10 @@ output "jump-info" {
   }
 }
 
-output "osd-info" {
+output "mon-info" {
   description = "General information about created VMs"
   value = {
-    for vm in data.yandex_compute_instance.osd :
+    for vm in data.yandex_compute_instance.mon :
     vm.name => {
       ip_address     = vm.network_interface.*.ip_address
       nat_ip_address = vm.network_interface.*.nat_ip_address
@@ -31,10 +31,10 @@ output "mds-info" {
   }
 }
 
-output "mon-info" {
+output "osd-info" {
   description = "General information about created VMs"
   value = {
-    for vm in data.yandex_compute_instance.mon :
+    for vm in data.yandex_compute_instance.osd :
     vm.name => {
       ip_address     = vm.network_interface.*.ip_address
       nat_ip_address = vm.network_interface.*.nat_ip_address

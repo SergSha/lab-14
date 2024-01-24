@@ -20,10 +20,6 @@ variable "domain_name" {
   type = string
 }
 
-variable "domain_org" {
-  type = string
-}
-
 #variable "domain_token" {
 #  type = string
 #}

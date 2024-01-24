@@ -3,13 +3,13 @@
 %{ for host in jump ~}
 ${ host["name"] } ansible_host=${ host.network_interface[0].ip_address } ip=${ host.network_interface[0].ip_address }
 %{ endfor ~}
-%{ for host in osd ~}
+%{ for host in mon ~}
 ${ host["name"] } ansible_host=${ host.network_interface[0].ip_address } ip=${ host.network_interface[0].ip_address }
 %{ endfor ~}
 %{ for host in mds ~}
 ${ host["name"] } ansible_host=${ host.network_interface[0].ip_address } ip=${ host.network_interface[0].ip_address }
 %{ endfor ~}
-%{ for host in mon ~}
+%{ for host in osd ~}
 ${ host["name"] } ansible_host=${ host.network_interface[0].ip_address } ip=${ host.network_interface[0].ip_address }
 %{ endfor ~}
 
@@ -18,8 +18,8 @@ ${ host["name"] } ansible_host=${ host.network_interface[0].ip_address } ip=${ h
 ${ host["name"] }
 %{ endfor ~}
 
-[osd]
-%{ for host in osd ~}
+[mon]
+%{ for host in mon ~}
 ${ host["name"] }
 %{ endfor ~}
 
@@ -28,8 +28,8 @@ ${ host["name"] }
 ${ host["name"] }
 %{ endfor ~}
 
-[mon]
-%{ for host in mon ~}
+[osd]
+%{ for host in osd ~}
 ${ host["name"] }
 %{ endfor ~}
 

@@ -1,0 +1,53 @@
+---
+# dnf install podman lvm2 -y
+- name: Install podman lvm2
+  ansible.builtin.dnf:
+    name:
+      - podman
+      - lvm2
+    state: latest
+
+# systemctl enable podman --now
+- name: Start podman service
+  ansible.builtin.systemd:
+    name: podman
+    state: restarted
+    enabled: yes
+
+# curl --silent --remote-name --location https://download.ceph.com/rpm-18.2.0/el9/noarch/cephadm
+- name: Download cephadm
+  ansible.builtin.get_url:
+    url: https://download.ceph.com/rpm-18.2.0/el9/noarch/cephadm
+    dest: /usr/bin/cephadm
+    mode: '0755'
+  when: inventory_hostname in 'mon-01'
+
+# cp initial-config-primary-cluster.yaml ~/
+- name: Copy bootstrap ceph config file
+  ansible.builtin.copy:
+    src: "initial-config-primary-cluster.yaml"
+    dest: "~/initial-config-primary-cluster.yaml"
+  when: inventory_hostname in 'mon-01'
+
+# cephadm bootstrap
+- name: Bootstrap ceph config file
+  ansible.builtin.command: 
+    cmd: |
+      - cephadm bootstrap --mon-ip={{ hostvars['mon-01'].ansible_host }} \
+        --apply-spec=~/initial-config-primary-cluster.yaml \
+        --initial-dashboard-password=otus@Otus1234 \
+        --dashboard-password-noupdate \
+        --allow-fqdn-hostname \
+        --registry-url=registry.example.com \
+        --registry-username=registry \
+        --registry-password=otus@Otus1234
+      - ceph config set mon public_network 10.10.10.0/24
+      - ceph orch restart mon
+  when: inventory_hostname in 'mon-01'
+
+## systemctl enable nginx --now
+#- name: Start Nginx Service
+#  ansible.builtin.systemd:
+#    name: nginx
+#    state: restarted
+#    enabled: yes

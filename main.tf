@@ -1,5 +1,5 @@
 locals {
-  vm_user         = "cloud-user"
+  vm_user         = "almalinux"
   ssh_public_key  = "~/.ssh/id_rsa.pub"
   ssh_private_key = "~/.ssh/id_rsa"
   #vm_name         = "instance"
@@ -35,7 +35,7 @@ locals {
   osd_count   = "5"
   mds_count   = "1"
   mon_count   = "3"
-  disks_count = "3"
+  disks_count = "2"
   /*
   disk = {
     "web" = {
@@ -142,6 +142,36 @@ data "yandex_compute_instance" "jump" {
   depends_on = [module.jump]
 }
 
+module "mon" {
+  source         = "./modules/instances"
+  count          = local.mon_count
+  vm_name        = "mon-${format("%02d", count.index + 1)}"
+  vpc_name       = local.vpc_name
+  #folder_id      = yandex_resourcemanager_folder.folders["lab-folder"].id
+  network_interface = {
+    for subnet in yandex_vpc_subnet.subnets :
+    subnet.name => {
+      subnet_id = subnet.id
+      #nat       = true
+    }
+    if subnet.name == "lab-subnet" #|| subnet.name == "nginx-subnet"
+  }
+  #subnet_cidrs   = yandex_vpc_subnet.subnet.v4_cidr_blocks
+  #subnet_name    = yandex_vpc_subnet.subnet.name
+  #subnet_id      = yandex_vpc_subnet.subnet.id
+  vm_user        = local.vm_user
+  ssh_public_key = local.ssh_public_key
+  secondary_disk = {}
+  depends_on     = [yandex_compute_disk.disks]
+}
+
+data "yandex_compute_instance" "mon" {
+  count      = length(module.mon)
+  name       = module.mon[count.index].vm_name
+  #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
+  depends_on = [module.mon]
+}
+
 module "mds" {
   source         = "./modules/instances"
   count          = local.mds_count
@@ -170,36 +200,6 @@ data "yandex_compute_instance" "mds" {
   name       = module.mds[count.index].vm_name
   #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
   depends_on = [module.mds]
-}
-
-module "mon" {
-  source         = "./modules/instances"
-  count          = local.mon_count
-  vm_name        = "nginx-${format("%02d", count.index + 1)}"
-  vpc_name       = local.vpc_name
-  #folder_id      = yandex_resourcemanager_folder.folders["lab-folder"].id
-  network_interface = {
-    for subnet in yandex_vpc_subnet.subnets :
-    subnet.name => {
-      subnet_id = subnet.id
-      #nat       = true
-    }
-    if subnet.name == "lab-subnet" #|| subnet.name == "nginx-subnet"
-  }
-  #subnet_cidrs   = yandex_vpc_subnet.subnet.v4_cidr_blocks
-  #subnet_name    = yandex_vpc_subnet.subnet.name
-  #subnet_id      = yandex_vpc_subnet.subnet.id
-  vm_user        = local.vm_user
-  ssh_public_key = local.ssh_public_key
-  secondary_disk = {}
-  depends_on     = [yandex_compute_disk.disks]
-}
-
-data "yandex_compute_instance" "mon" {
-  count      = length(module.mon)
-  name       = module.mon[count.index].vm_name
-  #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
-  depends_on = [module.mon]
 }
 
 module "osd" {
@@ -277,6 +277,18 @@ resource "local_file" "inventory_file" {
     }
   )
   filename = "${path.module}/inventory.ini"
+}
+
+resource "local_file" "inintial_ceph_file" {
+  content = templatefile("${path.module}/templates/initial-config-primary-cluster.yaml.tpl",
+    {
+      osd         = data.yandex_compute_instance.osd
+      mds         = data.yandex_compute_instance.mds
+      mon         = data.yandex_compute_instance.mon
+      domain_name = var.domain_name
+    }
+  )
+  filename = "${path.module}/roles/ceph/files/initial-config-primary-cluster.yaml"
 }
 /*
 resource "yandex_lb_target_group" "webservers" {
