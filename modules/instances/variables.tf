@@ -98,7 +98,7 @@ variable "allow_stopping_for_update" {
 
 variable "image_id" {
   description = "Default image ID AlmaLinux 9"
-  default     = "fd8cvn7c0lb5ub3ip3kn" # almalinux-9-v20230911
+  default     = "fd877fuskeokm2plco89" # almalinux-9-v20240108
   type        = string
 }
 

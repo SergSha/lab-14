@@ -1,0 +1,16 @@
+---
+# dnf install podman lvm2 -y
+- name: Install podman lvm2
+  ansible.builtin.dnf:
+    name:
+      - podman
+      - lvm2
+    state: latest
+
+# systemctl enable podman --now
+- name: Start podman service
+  ansible.builtin.systemd:
+    name: podman
+    state: restarted
+    enabled: yes
+

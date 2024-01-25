@@ -4,6 +4,13 @@ flush ruleset
 
 table ip filter {
 
+        chain NGINX_INP {
+                tcp dport { 80, 443, 8080 } ct state new counter accept
+        }
+        chain CONSUL_INP {
+                tcp dport { 8300,8301,8302,8500,8600 } ct state new counter accept
+                udp dport { 8301,8302,8600 } ct state new counter accept
+        }
         chain INPUT {
                 type filter hook input priority filter; policy drop;
                 ct state invalid counter drop
@@ -12,6 +19,8 @@ table ip filter {
                 udp dport 323 counter accept
                 ip saddr {{ subnet_cidrs }} icmp type echo-request counter accept
                 ct state established,related counter accept
+                counter jump NGINX_INP
+                counter jump CONSUL_INP
         }
 
         chain FORWARD {

@@ -1,3 +1,0 @@
----
-- name: Include nftables service
-  include_tasks: nftables.yml

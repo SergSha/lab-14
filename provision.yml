@@ -32,16 +32,14 @@
   roles:
     - { role: chrony, tags: chrony_tag }
 
-- hosts: jump
-  #remote_user: cloud-user
+- hosts: all
   become: true
   serial: 5
   roles:
-    - { role: jump-servers, tags: jump-servers_tag }
+    - { role: ceph_install, tags: ceph_install_tag }
 
 - hosts: all
-  #remote_user: cloud-user
   become: true
   serial: 5
   roles:
-    - { role: ceph, tags: ceph_tag }
+    - { role: ceph_setup, tags: ceph_setup_tag }
