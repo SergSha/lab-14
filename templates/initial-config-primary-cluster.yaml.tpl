@@ -30,10 +30,10 @@ placement:
   host_pattern: 'mds*'
 ---
 service_type: osd
-service_id: default_placement_group
+service_id: default_drive_group
 placement:
   host_pattern: 'osd*'
 data_devices:
   paths:
-  - /dev/vdb
-  - /dev/vdc
+    - /dev/vdb
+    - /dev/vdc

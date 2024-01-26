@@ -56,6 +56,7 @@ resource "yandex_compute_instance" "instances" {
 
   metadata = {
     ssh-keys  = "${var.vm_user}:${file(var.ssh_public_key)}"
+    user-data = var.user-data
   }
 
   allow_stopping_for_update = var.allow_stopping_for_update

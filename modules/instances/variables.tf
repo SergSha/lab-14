@@ -151,3 +151,9 @@ variable "ssh_private_key" {
   description = "cloud-config ssh private key"
   default = ""
 }
+
+variable "user-data" {
+  type        = string
+  description = "user data"
+  default = ""
+}

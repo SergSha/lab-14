@@ -6,6 +6,12 @@
       - policycoreutils-python-utils
     state: present
 
+# setenforce 0
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  ansible.posix.selinux:
+    policy: targeted
+    state: permissive
+
 # semanage port -l | grep http_port_t
 # http_port_t                    tcp      443, 488, 8008, 8009, 8443, 9000
 
@@ -24,13 +30,13 @@
 #    setype: httpd_sys_rw_content_t
 #    state: present
 
-# setsebool -P httpd_can_network_relay 1
-- name: Set httpd_can_network_relay flag on and keep it persistent across reboots
-  ansible.posix.seboolean:
-    name: "{{ item }}"
-    state: true
-    persistent: true
-  loop:
-    - httpd_can_network_connect
-    - httpd_can_network_relay
-    - nis_enabled
+## setsebool -P httpd_can_network_relay 1
+#- name: Set httpd_can_network_relay flag on and keep it persistent across reboots
+#  ansible.posix.seboolean:
+#    name: "{{ item }}"
+#    state: true
+#    persistent: true
+#  loop:
+#    - httpd_can_network_connect
+#    - httpd_can_network_relay
+#    - nis_enabled

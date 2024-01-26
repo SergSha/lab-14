@@ -130,6 +130,8 @@ module "mon" {
   #subnet_id      = yandex_vpc_subnet.subnet.id
   vm_user        = local.vm_user
   ssh_public_key = local.ssh_public_key
+  user-data      = count.index != 0 ? "#cloud-config\nssh_authorized_keys:\n- ${tls_private_key.ceph_key.public_key_openssh}" : "#cloud-config\nhostname: mon-01\nwrite_files:\n- path: /home/${local.vm_user}/.ssh/id_rsa\n  defer: true\n  permissions: 0600\n  owner: ${local.vm_user}:${local.vm_user}\n  encoding: b64\n  content: ${base64encode("${tls_private_key.ceph_key.private_key_openssh}")}\n- path: /home/${local.vm_user}/.ssh/id_rsa.pub\n  defer: true\n  permissions: 0600\n  owner: ${local.vm_user}:${local.vm_user}\n  encoding: b64\n  content: ${base64encode("${tls_private_key.ceph_key.public_key_openssh}")}"
+
   secondary_disk = {}
   depends_on     = [yandex_compute_disk.disks]
 }
@@ -160,6 +162,7 @@ module "mds" {
   #subnet_id      = yandex_vpc_subnet.subnet.id
   vm_user        = local.vm_user
   ssh_public_key = local.ssh_public_key
+  user-data      = "#cloud-config\nssh_authorized_keys:\n- ${tls_private_key.ceph_key.public_key_openssh}"
   secondary_disk = {}
   depends_on = [yandex_compute_disk.disks]
 }
@@ -190,6 +193,7 @@ module "osd" {
   #subnet_id      = yandex_vpc_subnet.subnet.id
   vm_user        = local.vm_user
   ssh_public_key = local.ssh_public_key
+  user-data      = "#cloud-config\nssh_authorized_keys:\n- ${tls_private_key.ceph_key.public_key_openssh}"
   secondary_disk = {
     #disk_id = yandex_compute_disk.disks[count.index * local.disks_count + secondary_disk.value].id
     #name    = "osd-${format("%02d", floor(count.index / local.disks_count) + 1)}-disk-${format("%02d", count.index % local.disks_count + 1)}"
@@ -257,6 +261,11 @@ resource "local_file" "inintial_ceph_file" {
     }
   )
   filename = "${path.module}/roles/ceph_setup/files/initial-config-primary-cluster.yaml"
+}
+
+resource "tls_private_key" "ceph_key" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
 }
 /*
 resource "yandex_lb_target_group" "webservers" {
