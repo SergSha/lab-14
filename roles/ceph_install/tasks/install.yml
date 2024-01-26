@@ -14,3 +14,23 @@
     state: restarted
     enabled: yes
 
+# curl --silent --remote-name --location https://download.ceph.com/rpm-18.2.0/el9/noarch/cephadm
+- name: Download cephadm
+  ansible.builtin.get_url:
+    url: https://download.ceph.com/rpm-18.2.0/el9/noarch/cephadm
+    dest: ~/cephadm
+    mode: '0755'
+
+# ~/cephadm add-repo --release reef && ~/cephadm install
+- name: Install ceph
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - ~/cephadm add-repo --release reef
+    - ~/cephadm install
+    - ~/cephadm install ceph-common
+
+# rm -f ~/cephadm
+- name: Remove file cephadm
+  ansible.builtin.file:
+    path: ~/cephadm
+    state: absent

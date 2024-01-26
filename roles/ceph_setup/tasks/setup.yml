@@ -1,17 +1,9 @@
 ---
-# curl --silent --remote-name --location https://download.ceph.com/rpm-18.2.0/el9/noarch/cephadm
-- name: Download cephadm
-  ansible.builtin.get_url:
-    url: https://download.ceph.com/rpm-18.2.0/el9/noarch/cephadm
-    dest: /usr/bin/cephadm
-    mode: '0755'
-  when: inventory_hostname in 'mon-01'
-
 # cp initial-config-primary-cluster.yaml ~/
 - name: Copy bootstrap ceph config file
   ansible.builtin.copy:
-    src: "initial-config-primary-cluster.yaml"
-    dest: "~/initial-config-primary-cluster.yaml"
+    src: initial-config-primary-cluster.yaml
+    dest: ~/initial-config-primary-cluster.yaml
   when: inventory_hostname in 'mon-01'
 
 ## cephadm bootstrap
@@ -21,18 +13,4 @@
 #    - /usr/bin/cephadm bootstrap --mon-ip={{ hostvars['mon-01'].ansible_host }} --apply-spec=/root/initial-config-primary-cluster.yaml --initial-dashboard-user=otus --initial-dashboard-password=otus --dashboard-password-noupdate --allow-fqdn-hostname --allow-overwrite --ssh-user almalinux --ssh-private-key /home/almalinux/.ssh/id_rsa --ssh-public-key /home/almalinux/.ssh/id_rsa.pub
 #    - /usr/bin/cephadm shell -- ceph config set mon public_network 10.10.10.0/24
 #    - /usr/bin/cephadm shell -- ceph orch restart mon
-#  when: inventory_hostname in 'mon-01'
-
-## cephadm bootstrap
-#- name: Bootstrap ceph config file 2
-#  ansible.builtin.command: 
-#    cmd: |
-#      /usr/bin/cephadm shell -- ceph config set mon public_network 10.10.10.0/24
-#  when: inventory_hostname in 'mon-01'
-
-## cephadm bootstrap
-#- name: Bootstrap ceph config file 3
-#  ansible.builtin.command: 
-#    cmd: |
-#      /usr/bin/cephadm shell -- ceph orch restart mon
 #  when: inventory_hostname in 'mon-01'

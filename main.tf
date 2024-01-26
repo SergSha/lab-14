@@ -227,7 +227,7 @@ resource "yandex_compute_disk" "disks" {
   count     = local.osd_count * local.disks_count
   name      = "osd-${format("%02d", floor(count.index / local.disks_count) + 1)}-disk-${format("%02d", count.index % local.disks_count + 1)}"
   #folder_id = yandex_resourcemanager_folder.folders["lab-folder"].id
-  size      = "1"
+  size      = "10"
   zone      = var.zone
 }
 

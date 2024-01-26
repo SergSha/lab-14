@@ -96,18 +96,15 @@ terraform init && terraform apply -auto-approve
 ```
 
 
-[root@mon-01 ~]# /usr/bin/cephadm bootstrap --mon-ip=10.10.10.19 --apply-spec=/root/initial-config-primary-cluster.yaml --allow-overwrite --initial-dashboard-user=otus --initial-dashboard-password=otus --dashboard-password-noupdate --allow-fqdn-hostname --ssh-user almalinux --ssh-private-key /home/almalinux/.ssh/id_rsa --ssh-public-key /home/almalinux/.ssh/id_rsa.pub
-...
-...
-Saving cluster configuration to /var/lib/ceph/3694a48c-bc25-11ee-a5f5-d00d15e88ec7/config directory
+Saving cluster configuration to /var/lib/ceph/703ee3b2-bc81-11ee-bb01-d00db067b937/config directory
 Enabling autotune for osd_memory_target
 You can access the Ceph CLI as following in case of multi-cluster or non-default config:
 
-	sudo /usr/bin/cephadm shell --fsid 3694a48c-bc25-11ee-a5f5-d00d15e88ec7 -c /etc/ceph/ceph.conf -k /etc/ceph/ceph.client.admin.keyring
+	sudo /usr/sbin/cephadm shell --fsid 703ee3b2-bc81-11ee-bb01-d00db067b937 -c /etc/ceph/ceph.conf -k /etc/ceph/ceph.client.admin.keyring
 
 Or, if you are only running a single cluster on this host:
 
-	sudo /usr/bin/cephadm shell 
+	sudo /usr/sbin/cephadm shell 
 
 Please consider enabling telemetry to help improve Ceph:
 
