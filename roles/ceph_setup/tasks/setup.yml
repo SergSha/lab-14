@@ -4,13 +4,13 @@
   ansible.builtin.copy:
     src: initial-config-primary-cluster.yaml
     dest: ~/initial-config-primary-cluster.yaml
-  when: inventory_hostname in 'mon-01'
 
-## cephadm bootstrap
-#- name: Bootstrap ceph config file 1
-#  ansible.builtin.command: "{{ item }}"
-#  loop:
-#    - /usr/bin/cephadm bootstrap --mon-ip={{ hostvars['mon-01'].ansible_host }} --apply-spec=/root/initial-config-primary-cluster.yaml --initial-dashboard-user=otus --initial-dashboard-password=otus --dashboard-password-noupdate --allow-fqdn-hostname --allow-overwrite --ssh-user almalinux --ssh-private-key /home/almalinux/.ssh/id_rsa --ssh-public-key /home/almalinux/.ssh/id_rsa.pub
-#    - /usr/bin/cephadm shell -- ceph config set mon public_network 10.10.10.0/24
-#    - /usr/bin/cephadm shell -- ceph orch restart mon
-#  when: inventory_hostname in 'mon-01'
+# cephadm bootstrap
+- name: Bootstrap ceph config file 1
+  ansible.builtin.command: "{{ item }}"
+  loop:
+    - /usr/sbin/cephadm bootstrap --mon-ip={{ hostvars['mon-01'].ansible_host }} --apply-spec=/root/initial-config-primary-cluster.yaml --initial-dashboard-user=otus --initial-dashboard-password=otus --dashboard-password-noupdate --allow-fqdn-hostname --allow-overwrite --ssh-user almalinux --ssh-private-key /home/almalinux/.ssh/id_rsa --ssh-public-key /home/almalinux/.ssh/id_rsa.pub
+    - /usr/bin/ceph config set mon public_network 10.10.10.0/24
+    - /usr/bin/ceph orch restart mon
+    - /usr/bin/ceph telemetry enable channel perf
+    - /usr/bin/ceph telemetry on --license sharing-1-0

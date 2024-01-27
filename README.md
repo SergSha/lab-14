@@ -116,3 +116,38 @@ For more information see:
 
 Bootstrap complete.
 [root@mon-01 ~]# 
+
+
+Create two pools with default settings for use with a file system, you might run the following commands:
+```bash
+ceph osd pool create cephfs_data
+ceph osd pool create cephfs_metadata
+```
+
+Once the pools are created, you may enable the file system using the fs new command:
+```bash
+ceph fs new myfs cephfs_metadata cephfs_data
+```
+```bash
+ceph fs ls
+```
+
+Create directory for ceph mount:
+```bash
+mkdir /mnt/cephfs
+```
+
+Get fsid of ceph cluster:
+```bash
+ceph fsid
+df544aea-bd4d-11ee-8e82-d00d13a36aec
+```
+
+Mount ceph fs to /mnt/cephfs:
+```bash
+mount.ceph admin@df544aea-bd4d-11ee-8e82-d00d13a36aec.myfs=/ /mnt/cephfs/
+```
+or
+```bash
+mount.ceph admin@.myfs=/ /mnt/cephfs/
+```

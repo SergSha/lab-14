@@ -43,3 +43,4 @@
   serial: 5
   roles:
     - { role: ceph_setup, tags: ceph_setup_tag }
+  when: inventory_hostname in 'mon-01'
