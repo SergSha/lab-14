@@ -3,14 +3,14 @@
 #}
 
 variable "vpc_name" {
-  type = string
   description = "VPC name"
+  type = string
 }
 
 variable "zone" {
+  description = "zone"
   type = string
   default = "ru-central1-b"
-  description = "zone"
 }
 
 variable "network_interface" {
@@ -20,18 +20,18 @@ variable "network_interface" {
 }
 
 #variable "subnet_name" {
-#  type = string
 #  description = "subnet name"
+#  type = string
 #}
 
 #variable "subnet_id" {
-#  type = string
 #  description = "subnet id"
+#  type = string
 #}
 
 #variable "subnet_cidrs" {
-#  type = list(string)
 #  description = "CIDRs"
+#  type = list(string)
 #}
 /*
 variable "subnet_cidrs" {}
@@ -44,26 +44,26 @@ variable "vm_name" {
 
 variable "cpu" {
   description = "VM CPU count"
-  default     = 2
   type        = number
+  default     = 2
 }
 
 variable "memory" {
   description = "VM RAM size"
-  default     = 2
   type        = number
+  default     = 2
 }
 
 variable "core_fraction" {
   description = "Core fraction, default 100%"
-  default     = 50
   type        = number
+  default     = 50
 }
 
 variable "disk" {
   description = "VM Disk size"
-  default     = 10
   type        = number
+  default     = 10
 }
 
 variable "disk_type" {

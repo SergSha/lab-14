@@ -38,9 +38,8 @@
   roles:
     - { role: ceph_install, tags: ceph_install_tag }
 
-- hosts: all
+- hosts: mon-01
   become: true
   serial: 5
   roles:
     - { role: ceph_setup, tags: ceph_setup_tag }
-  when: inventory_hostname in 'mon-01'

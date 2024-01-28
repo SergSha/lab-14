@@ -9,6 +9,9 @@ ${ host["name"] } ansible_host=${ host.network_interface[0].ip_address } ip=${ h
 %{ for host in osd ~}
 ${ host["name"] } ansible_host=${ host.network_interface[0].ip_address } ip=${ host.network_interface[0].ip_address }
 %{ endfor ~}
+%{ for host in client ~}
+${ host["name"] } ansible_host=${ host.network_interface[0].ip_address } ip=${ host.network_interface[0].ip_address }
+%{ endfor ~}
 
 [mon]
 %{ for host in mon ~}
@@ -22,6 +25,11 @@ ${ host["name"] }
 
 [osd]
 %{ for host in osd ~}
+${ host["name"] }
+%{ endfor ~}
+
+[clients]
+%{ for host in client ~}
 ${ host["name"] }
 %{ endfor ~}
 

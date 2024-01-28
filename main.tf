@@ -31,10 +31,11 @@ locals {
 
   #subnet_cidrs  = ["10.10.50.0/24"]
   #subnet_name   = "my_vpc_subnet"
-  osd_count   = "3"
-  mds_count   = "1"
-  mon_count   = "3"
-  disks_count = "2"
+  osd_count    = "3"
+  mds_count    = "1"
+  mon_count    = "3"
+  client_count = "1"
+  disks_count  = "2"
   /*
   disk = {
     "web" = {
@@ -238,12 +239,44 @@ resource "yandex_compute_disk" "disks" {
 #  depends_on = [yandex_compute_disk.disks]
 #}
 
+module "client" {
+  source         = "./modules/instances"
+  count          = local.client_count
+  vm_name        = "client-${format("%02d", count.index + 1)}"
+  vpc_name       = local.vpc_name
+  #folder_id      = yandex_resourcemanager_folder.folders["lab-folder"].id
+  network_interface = {
+    for subnet in yandex_vpc_subnet.subnets :
+    subnet.name => {
+      subnet_id = subnet.id
+      #nat       = true
+    }
+    if subnet.name == "lab-subnet" #|| subnet.name == "backend-subnet"
+  }
+  #subnet_cidrs   = yandex_vpc_subnet.subnet.v4_cidr_blocks
+  #subnet_name    = yandex_vpc_subnet.subnet.name
+  #subnet_id      = yandex_vpc_subnet.subnet.id
+  vm_user        = local.vm_user
+  ssh_public_key = local.ssh_public_key
+  user-data      = "#cloud-config\nssh_authorized_keys:\n- ${tls_private_key.ceph_key.public_key_openssh}"
+  secondary_disk = {}
+  depends_on = [yandex_compute_disk.disks]
+}
+
+data "yandex_compute_instance" "client" {
+  count      = length(module.client)
+  name       = module.client[count.index].vm_name
+  #folder_id  = yandex_resourcemanager_folder.folders["lab-folder"].id
+  depends_on = [module.client]
+}
+
 resource "local_file" "inventory_file" {
   content = templatefile("${path.module}/templates/inventory.tpl",
     {
       mon         = data.yandex_compute_instance.mon
       mds         = data.yandex_compute_instance.mds
       osd         = data.yandex_compute_instance.osd
+      client      = data.yandex_compute_instance.client
       remote_user = local.vm_user
       domain_name = var.domain_name
     }
@@ -254,9 +287,10 @@ resource "local_file" "inventory_file" {
 resource "local_file" "inintial_ceph_file" {
   content = templatefile("${path.module}/templates/initial-config-primary-cluster.yaml.tpl",
     {
-      osd         = data.yandex_compute_instance.osd
-      mds         = data.yandex_compute_instance.mds
       mon         = data.yandex_compute_instance.mon
+      mds         = data.yandex_compute_instance.mds
+      osd         = data.yandex_compute_instance.osd
+      client      = data.yandex_compute_instance.client
       domain_name = var.domain_name
     }
   )

@@ -118,15 +118,276 @@ Bootstrap complete.
 [root@mon-01 ~]# 
 
 
+
+Просчитать pg для pool'ов:
+rbd - 5/10 объема дисков 
+cephfs - 3/10 объема дисков 
+объяснить логику расчёта, создать пулы.
+
+Формула для расчета: 
+Total PGs = (total_number_of_OSD * %_usage) / max_replication_count
+
+Получаем для 6 osd с дисками по 10 Гб:
+
+Для RBD: 
+```
+total PGs = (6 * 5/10 * 100) / 3 = 100 => 128 pg
+```
+
+Создаем пул: 
+```bash
+ceph osd pool create myrbd 128
+ceph osd pool application enable myrbd rbd
+```
+```
+[root@mon-01 ~]# ceph osd pool create myrbd 128
+pool 'myrbd' created
+[root@mon-01 ~]# ceph osd pool application enable myrbd rbd
+enabled application 'rbd' on pool 'myrbd'
+[root@mon-01 ~]# 
+
+```
+
+Для cephfs: 
+```
+total PGs = (6 * 3/10 * 100) / 3 = 60 => 64 pg
+```
+
+Создаем пул для данных: 
+```bash
+ceph osd pool create cephfs_data 64
+```
+```
+[root@mon-01 ~]# ceph osd pool create cephfs_data 64
+pool 'cephfs_data' created
+[root@mon-01 ~]# 
+```
+
+и для метаданных: 
+```bash
+ceph osd pool create cephfs_meta
+```
+```
+[root@mon-01 ~]# ceph osd pool create cephfs_meta
+pool 'cephfs_meta' created
+[root@mon-01 ~]# 
+```
+
+Создать и пробросить на клиентские машины
+3 rbd 
+cephfs (общий раздел на каждую машину)
+
+#### RBD
+
+Создаем 3 rbd диска:
+```bash
+rbd create disk1 --size 5G --pool myrbd
+rbd create disk2 --size 10G --pool myrbd
+rbd create disk3 --size 15G --pool myrbd
+```
+```
+[root@mon-01 ~]# rbd create disk1 --size 5G --pool myrbd
+[root@mon-01 ~]# rbd create disk2 --size 10G --pool myrbd
+[root@mon-01 ~]# rbd create disk3 --size 15G --pool myrbd
+[root@mon-01 ~]# rbd ls --pool myrbd
+disk1
+disk2
+disk3
+[root@mon-01 ~]# 
+```
+
+Скопируем ceph конфиг файл /etc/ceph/ceph.conf на клиентскую машину:
+```
+[root@client-01 ~]# vi /etc/ceph/ceph.conf
+# minimal ceph.conf for 0941ec88-bdfb-11ee-8c1c-d00dd111fe9b
+[global]
+	fsid = 0941ec88-bdfb-11ee-8c1c-d00dd111fe9b
+	mon_host = [v2:10.10.10.28:3300/0,v1:10.10.10.28:6789/0] [v2:10.10.10.27:3300/0,v1:10.10.10.27:6789/0] [v2:10.10.10.14:3300/0,v1:10.10.10.14:6789/0]
+```
+
+Также скопируем ключ клиента /etc/ceph/ceph.client.admin.keyring:
+```
+vi /etc/ceph/ceph.client.admin.keyring
+[client.admin]
+        key = AQCBgrZl77pDHBAAU0DzqH7rSnwSYVeExWscUA==
+        caps mds = "allow *"
+        caps mgr = "allow *"
+        caps mon = "allow *"
+        caps osd = "allow *"
+```
+
+Подключим блочное устройство disk3 к клиенту:
+```bash
+rbd device map myrbd/disk3
+```
+```
+[root@client-01 ~]# rbd device map myrbd/disk3 
+/dev/rbd0
+[root@client-01 ~]# rbd showmapped
+id  pool   namespace  image  snap  device   
+0   myrbd             disk3  -     /dev/rbd0
+[root@client-01 ~]# 
+```
+
+Создадим файловую систему и смонтируем устройство:
+```bash
+mkfs.xfs /dev/rbd/myrbd/disk3
+```
+```
+[root@client-01 ~]# mkfs.xfs /dev/rbd/myrbd/disk3
+meta-data=/dev/rbd/myrbd/disk3   isize=512    agcount=16, agsize=245760 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=1        finobt=1, sparse=1, rmapbt=0
+         =                       reflink=1    bigtime=1 inobtcount=1 nrext64=0
+data     =                       bsize=4096   blocks=3932160, imaxpct=25
+         =                       sunit=16     swidth=16 blks
+naming   =version 2              bsize=4096   ascii-ci=0, ftype=1
+log      =internal log           bsize=4096   blocks=16384, version=2
+         =                       sectsz=512   sunit=16 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+Discarding blocks...Done.
+[root@client-01 ~]# 
+```
+
+Создадим директорий для монтирования:
+```bash
+mkdir /mnt/ceph_rbd
+```
+```
+[root@client-01 ~]# mkdir /mnt/ceph_rbd
+[root@client-01 ~]# 
+```
+Смонтируем файловую систему:
+```bash
+mount -t xfs /dev/rbd/myrbd/disk3 /mnt/ceph_rbd/
+```
+```
+[root@client-01 ~]# mount -t xfs /dev/rbd/myrbd/disk3 /mnt/ceph_rbd/
+[root@client-01 ~]# df -h | grep rbd
+/dev/rbd0        15G  140M   15G   1% /mnt/ceph_rbd
+[root@client-01 ~]# 
+```
+
+Автоматизируем данный процесс, но предварительно отмонтируем устройство:
+```bash
+umount /mnt/ceph_rbd/
+rbd unmap /dev/rbd0
+rbd showmapped
+```
+```
+[root@client-01 ~]# umount /mnt/ceph_rbd/
+[root@client-01 ~]# rbd unmap /dev/rbd0
+[root@client-01 ~]# rbd showmapped
+[root@client-01 ~]# 
+```
+
+Для автоматического подключения RBD устройств воспользуемся службой rbdmap, которая использует файл /etc/ceph/rbdmap и подключает все устройства, прописанные в данном файле.
+
+Отредактируем файл /etc/ceph/rbdmap:
+```
+# RbdDevice             Parameters
+#poolname/imagename     id=client,keyring=/etc/ceph/ceph.client.keyring
+myrbd/disk3             id=admin,keyring=/etc/ceph/ceph.client.admin.keyring    #<--- добавлена строка
+```
+
+Добавим службу rbdmap в автозагрузку и сразу же запустим:
+```bash
+systemctl enable --now rbdmap
+```
+```
+[root@client-01 ~]# systemctl enable --now rbdmap
+Created symlink /etc/systemd/system/multi-user.target.wants/rbdmap.service → /usr/lib/systemd/system/rbdmap.service.
+[root@client-01 ~]# rbd showmapped
+id  pool   namespace  image  snap  device   
+0   myrbd             disk3  -     /dev/rbd0
+[root@client-01 ~]# 
+```
+
+Подправим fstab, для автоматического монтирования после перезагрузки ОС:
+```bash
+echo "/dev/rbd/myrbd/disk3                      /mnt/ceph_rbd           xfs     _netdev         0 0" >> /etc/fstab
+```
+```
+[root@client-01 ~]# echo "/dev/rbd/myrbd/disk3                      /mnt/ceph_rbd           xfs     _netdev         0 0" >> /etc/fstab
+[root@client-01 ~]# cat /etc/fstab
+#
+# /etc/fstab
+# Created by anaconda on Wed Nov  9 10:15:27 2022
+#
+# Accessible filesystems, by reference, are maintained under '/dev/disk/'.
+# See man pages fstab(5), findfs(8), mount(8) and/or blkid(8) for more info.
+#
+# After editing this file, run 'systemctl daemon-reload' to update systemd
+# units generated from this file.
+#
+UUID=ceb11787-f80b-4377-859f-a83f14385537 /                       xfs     defaults        0 0
+/dev/rbd/myrbd/disk3                      /mnt/ceph_rbd           xfs     _netdev         0 0  #<--- добавлена строка
+```
+
+
+
+#### Cephfs
+
+Создаем cephfs:
+```bash
+ceph fs new cephfs cephfs_meta cephfs_data
+```
+```
+[root@mon-01 ~]# ceph fs new cephfs cephfs_meta cephfs_data
+  Pool 'cephfs_data' (id '3') has pg autoscale mode 'on' but is not marked as bulk.
+  Consider setting the flag by running
+    # ceph osd pool set cephfs_data bulk true
+new fs with metadata pool 4 and data pool 3
+[root@mon-01 ~]# 
+```
+```
+[root@mon-01 ~]# ceph fs ls
+name: cephfs, metadata pool: cephfs_meta, data pools: [cephfs_data ]
+[root@mon-01 ~]# 
+```
+
+Создадим директорий для монтирования:
+```bash
+mkdir /mnt/cephfs
+```
+```
+[root@client-01 ~]# mkdir /mnt/cephfs
+[root@client-01 ~]# 
+```
+
+Получим fsid ceph кластера:
+```bash
+ceph fsid
+```
+```
+[root@client-01 ~]# ceph fsid
+0941ec88-bdfb-11ee-8c1c-d00dd111fe9b
+[root@client-01 ~]# 
+```
+
+Смонтируем файловую систему:
+```bash
+mount.ceph admin@0941ec88-bdfb-11ee-8c1c-d00dd111fe9b.cephfs=/ /mnt/cephfs/
+```
+```
+[root@client-01 ~]# mount.ceph admin@0941ec88-bdfb-11ee-8c1c-d00dd111fe9b.cephfs=/ /mnt/cephfs/
+[root@client-01 ~]# df -h | grep cephfs
+admin@0941ec88-bdfb-11ee-8c1c-d00dd111fe9b.cephfs=/   19G     0   19G   0% /mnt/cephfs
+[root@client-01 ~]# 
+```
+
+
+
+---
 Create two pools with default settings for use with a file system, you might run the following commands:
 ```bash
 ceph osd pool create cephfs_data
-ceph osd pool create cephfs_metadata
+ceph osd pool create cephfs_meta
 ```
 
 Once the pools are created, you may enable the file system using the fs new command:
 ```bash
-ceph fs new myfs cephfs_metadata cephfs_data
+ceph fs new cephfs cephfs_meta cephfs_data
 ```
 ```bash
 ceph fs ls
@@ -145,9 +406,10 @@ df544aea-bd4d-11ee-8e82-d00d13a36aec
 
 Mount ceph fs to /mnt/cephfs:
 ```bash
-mount.ceph admin@df544aea-bd4d-11ee-8e82-d00d13a36aec.myfs=/ /mnt/cephfs/
+mount.ceph admin@df544aea-bd4d-11ee-8e82-d00d13a36aec.cephfs=/ /mnt/cephfs/
 ```
 or
 ```bash
-mount.ceph admin@.myfs=/ /mnt/cephfs/
+mount.ceph admin@.cephfs=/ /mnt/cephfs/
 ```
+---

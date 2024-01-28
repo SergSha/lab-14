@@ -6,7 +6,7 @@
     dest: ~/initial-config-primary-cluster.yaml
 
 # cephadm bootstrap
-- name: Bootstrap ceph config file 1
+- name: Bootstrap ceph config file and deploy ceph cluster
   ansible.builtin.command: "{{ item }}"
   loop:
     - /usr/sbin/cephadm bootstrap --mon-ip={{ hostvars['mon-01'].ansible_host }} --apply-spec=/root/initial-config-primary-cluster.yaml --initial-dashboard-user=otus --initial-dashboard-password=otus --dashboard-password-noupdate --allow-fqdn-hostname --allow-overwrite --ssh-user almalinux --ssh-private-key /home/almalinux/.ssh/id_rsa --ssh-public-key /home/almalinux/.ssh/id_rsa.pub
