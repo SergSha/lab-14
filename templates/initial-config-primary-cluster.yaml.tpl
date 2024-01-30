@@ -11,10 +11,12 @@ hostname: ${ host["name"] }.${ domain_name }
 ---
 %{ endfor ~}
 %{ for host in osd ~}
+%{ if host != osd[length(osd) - 1] ~}
 service_type: host
 addr: ${ host.network_interface[0].ip_address }
 hostname: ${ host["name"] }.${ domain_name }
 ---
+%{ endif ~}
 %{ endfor ~}
 service_type: mon
 placement:

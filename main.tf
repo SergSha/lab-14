@@ -31,11 +31,11 @@ locals {
 
   #subnet_cidrs  = ["10.10.50.0/24"]
   #subnet_name   = "my_vpc_subnet"
-  osd_count    = "3"
+  osd_count    = "4"
   mds_count    = "1"
   mon_count    = "3"
   client_count = "1"
-  disks_count  = "2"
+  disks_count  = "3"
   /*
   disk = {
     "web" = {
