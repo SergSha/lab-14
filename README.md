@@ -81,7 +81,7 @@ Outputs:
 client-info = {
   "client-01" = {
     "ip_address" = tolist([
-      "10.10.10.19",
+      "10.10.10.23",
     ])
     "nat_ip_address" = tolist([
       "",
@@ -91,7 +91,7 @@ client-info = {
 mds-info = {
   "mds-01" = {
     "ip_address" = tolist([
-      "10.10.10.8",
+      "10.10.10.3",
     ])
     "nat_ip_address" = tolist([
       "",
@@ -101,15 +101,15 @@ mds-info = {
 mon-info = {
   "mon-01" = {
     "ip_address" = tolist([
-      "10.10.10.21",
+      "10.10.10.35",
     ])
     "nat_ip_address" = tolist([
-      "51.250.99.58",
+      "158.160.4.48",
     ])
   }
   "mon-02" = {
     "ip_address" = tolist([
-      "10.10.10.15",
+      "10.10.10.25",
     ])
     "nat_ip_address" = tolist([
       "",
@@ -117,7 +117,7 @@ mon-info = {
   }
   "mon-03" = {
     "ip_address" = tolist([
-      "10.10.10.35",
+      "10.10.10.28",
     ])
     "nat_ip_address" = tolist([
       "",
@@ -127,7 +127,7 @@ mon-info = {
 osd-info = {
   "osd-01" = {
     "ip_address" = tolist([
-      "10.10.10.13",
+      "10.10.10.9",
     ])
     "nat_ip_address" = tolist([
       "",
@@ -135,7 +135,7 @@ osd-info = {
   }
   "osd-02" = {
     "ip_address" = tolist([
-      "10.10.10.28",
+      "10.10.10.24",
     ])
     "nat_ip_address" = tolist([
       "",
@@ -143,7 +143,7 @@ osd-info = {
   }
   "osd-03" = {
     "ip_address" = tolist([
-      "10.10.10.7",
+      "10.10.10.19",
     ])
     "nat_ip_address" = tolist([
       "",
@@ -151,7 +151,7 @@ osd-info = {
   }
   "osd-04" = {
     "ip_address" = tolist([
-      "10.10.10.36",
+      "10.10.10.4",
     ])
     "nat_ip_address" = tolist([
       "",
@@ -181,7 +181,7 @@ Ceph кластер будет состоять из следующих серв
 
 Если в строке браузера введём следующую строку:
 ```
-https://51.250.99.58:8443
+https://158.160.4.48:8443
 ```
 
 то получим страницу Ceph Dashbooard:
@@ -190,11 +190,11 @@ https://51.250.99.58:8443
 
 В дальнейшем все команды будем выполнять на сервере mon-01, поэтому подключимся к этому серверу с помощью ssh, имея публичный адрес, полученный во время разворачивания инфраструктуры ceph кластера:
 ```bash
-ssh almalinux@51.250.99.58
+ssh almalinux@158.160.4.48
 ```
 ```
-(.venv) [user@redos lab-14]$ ssh almalinux@51.250.99.58
-Last login: Tue Jan 30 15:03:13 2024 from 10.10.10.21
+(.venv) [user@redos lab-14]$ ssh almalinux@158.160.4.48
+Last login: Tue Jan 30 20:55:15 2024 from 10.10.10.35
 [almalinux@mon-01 ~]$ sudo -i
 [root@mon-01 ~]# 
 ```
@@ -307,7 +307,7 @@ ceph.conf                                     100%  265   894.2KB/s   00:00
 Подключимся к клиентской машине client-01 с помощью ssh и из директории /tmp перенесём ceph.conf и ключ ceph.client.admin.keyring в /etc/ceph/:
 ```
 [root@mon-01 ~]# ssh almalinux@client-01
-Last login: Tue Jan 30 14:59:13 2024 from 10.10.10.21
+Last login: Tue Jan 30 20:51:11 2024 from 10.10.10.35
 [almalinux@client-01 ~]$ sudo -i
 [root@client-01 ~]# mv /tmp/{ceph.client.admin.keyring,ceph.conf} /etc/ceph/
 [root@client-01 ~]# 
@@ -315,17 +315,17 @@ Last login: Tue Jan 30 14:59:13 2024 from 10.10.10.21
 Ceph конфиг файл ceph.conf выглядит следующим образом:
 ```
 [root@client-01 ~]# cat /etc/ceph/ceph.conf 
-# minimal ceph.conf for 0120dc54-bf67-11ee-9c79-d00d151775b8
+# minimal ceph.conf for 2c745bde-bf98-11ee-9416-d00d3f30ed62
 [global]
-	fsid = 0120dc54-bf67-11ee-9c79-d00d151775b8
-	mon_host = [v2:10.10.10.21:3300/0,v1:10.10.10.21:6789/0] [v2:10.10.10.15:3300/0,v1:10.10.10.15:6789/0] [v2:10.10.10.35:3300/0,v1:10.10.10.35:6789/0]
+	fsid = 2c745bde-bf98-11ee-9416-d00d3f30ed62
+	mon_host = [v2:10.10.10.35:3300/0,v1:10.10.10.35:6789/0] [v2:10.10.10.25:3300/0,v1:10.10.10.25:6789/0] [v2:10.10.10.28:3300/0,v1:10.10.10.28:6789/0]
 ```
 
 Ключ клиента ceph.client.admin.keyring выглядит подобным образом:
 ```
 [root@client-01 ~]# cat /etc/ceph/ceph.client.admin.keyring 
 [client.admin]
-	key = AQAp5bhleqo9NxAANNApd9s5vGDN7e1ShFoIew==
+	key = AQCkN7llzOPQLBAASG3av2VRB5RvegxnpOlCSQ==
 	caps mds = "allow *"
 	caps mgr = "allow *"
 	caps mon = "allow *"
@@ -406,7 +406,7 @@ echo "myrbd/disk3             id=admin,keyring=/etc/ceph/ceph.client.admin.keyri
 ```
 [root@client-01 ~]# echo "myrbd/disk3             id=admin,keyring=/etc/ceph/ceph.client.admin.keyring" >> /etc/ceph/rbdmap 
 [root@client-01 ~]# cat /etc/ceph/rbdmap
-# RbdDevice		Parameters
+# RbdDevice		      Parameters
 #poolname/imagename	id=client,keyring=/etc/ceph/ceph.client.keyring
 myrbd/disk3          id=admin,keyring=/etc/ceph/ceph.client.admin.keyring  #<--- добавлена строка
 ```
@@ -482,18 +482,18 @@ ceph fsid
 ```
 ```
 [root@client-01 ~]# ceph fsid
-0120dc54-bf67-11ee-9c79-d00d151775b8
+2c745bde-bf98-11ee-9416-d00d3f30ed62
 [root@client-01 ~]# 
 ```
 
 Смонтируем файловую систему cephfs:
 ```bash
-mount.ceph admin@0120dc54-bf67-11ee-9c79-d00d151775b8.cephfs=/ /mnt/cephfs/
+mount.ceph admin@2c745bde-bf98-11ee-9416-d00d3f30ed62.cephfs=/ /mnt/cephfs/
 ```
 ```
 [root@client-01 ~]# mount.ceph admin@0120dc54-bf67-11ee-9c79-d00d151775b8.cephfs=/ /mnt/cephfs/
 [root@client-01 ~]# df -h | grep cephfs
-admin@0120dc54-bf67-11ee-9c79-d00d151775b8.cephfs=/   19G     0   19G   0% /mnt/cephfs
+admin@2c745bde-bf98-11ee-9416-d00d3f30ed62.cephfs=/   19G     0   19G   0% /mnt/cephfs
 [root@client-01 ~]# 
 ```
 
@@ -521,14 +521,14 @@ ceph -s
 ```
 [root@mon-01 ~]# ceph -s
   cluster:
-    id:     0120dc54-bf67-11ee-9c79-d00d151775b8
+    id:     2c745bde-bf98-11ee-9416-d00d3f30ed62
     health: HEALTH_OK
  
   services:
-    mon: 3 daemons, quorum mon-01,mon-03,mon-02 (age 102m)
-    mgr: mon-01.duszzi(active, since 105m), standbys: mon-03.rrskxv, mon-02.cjmoqm
+    mon: 3 daemons, quorum mon-01,mon-03,mon-02 (age 37m)
+    mgr: mon-01.hdggnk(active, since 40m), standbys: mon-03.fwckkp, mon-02.sjnxoz
     mds: 1/1 daemons up
-    osd: 6 osds: 6 up (since 101m), 6 in (since 102m)
+    osd: 6 osds: 6 up (since 36m), 6 in (since 37m)
  
   data:
     volumes: 1/1 healthy
@@ -579,20 +579,25 @@ ceph -w
 
 В текущем окне терминала проверим промежуточное состояние ceph кластера:
 ```
+[root@mon-01 ~]# ceph health
+HEALTH_WARN 2 osds down; 1 host (2 osds) down; Degraded data redundancy: 45/135 objects degraded (33.333%), 29 pgs degraded, 113 pgs undersized
+[root@mon-01 ~]# 
+```
+
+```
 [root@mon-01 ~]# ceph -s
   cluster:
-    id:     0120dc54-bf67-11ee-9c79-d00d151775b8
+    id:     2c745bde-bf98-11ee-9416-d00d3f30ed62
     health: HEALTH_WARN
-            1 hosts fail cephadm check
             2 osds down
             1 host (2 osds) down
-            Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
+            Degraded data redundancy: 45/135 objects degraded (33.333%), 29 pgs degraded, 113 pgs undersized
  
   services:
-    mon: 3 daemons, quorum mon-01,mon-03,mon-02 (age 114m)
-    mgr: mon-01.duszzi(active, since 117m), standbys: mon-03.rrskxv, mon-02.cjmoqm
+    mon: 3 daemons, quorum mon-01,mon-03,mon-02 (age 65m)
+    mgr: mon-01.hdggnk(active, since 68m), standbys: mon-03.fwckkp, mon-02.sjnxoz
     mds: 1/1 daemons up
-    osd: 6 osds: 4 up (since 4m), 6 in (since 113m)
+    osd: 6 osds: 4 up (since 4m), 6 in (since 64m)
  
   data:
     volumes: 1/1 healthy
@@ -600,37 +605,37 @@ ceph -w
     objects: 45 objects, 6.8 MiB
     usage:   475 MiB used, 60 GiB / 60 GiB avail
     pgs:     45/135 objects degraded (33.333%)
-             81 active+undersized
-             32 active+undersized+degraded
+             84 active+undersized
+             29 active+undersized+degraded
  
-[root@mon-01 ~]# 
-```
-
-```
-[root@mon-01 ~]# ceph osd df
-ID  CLASS  WEIGHT   REWEIGHT  SIZE    RAW USE  DATA     OMAP  META     AVAIL    %USE  VAR   PGS  STATUS
- 1    hdd  0.00980         0     0 B      0 B      0 B   0 B      0 B      0 B     0     0    0    down
- 3    hdd  0.00980         0     0 B      0 B      0 B   0 B      0 B      0 B     0     0    0    down
- 0    hdd  0.00980   1.00000  10 GiB   78 MiB  8.6 MiB   0 B   69 MiB  9.9 GiB  0.76  0.98   54      up
- 4    hdd  0.00980   1.00000  10 GiB   80 MiB   11 MiB   0 B   69 MiB  9.9 GiB  0.79  1.02   59      up
- 2    hdd  0.00980   1.00000  10 GiB   79 MiB  9.2 MiB   0 B   69 MiB  9.9 GiB  0.77  0.99   59      up
- 5    hdd  0.00980   1.00000  10 GiB   80 MiB   11 MiB   0 B   69 MiB  9.9 GiB  0.78  1.01   54      up
-                       TOTAL  40 GiB  317 MiB   39 MiB   0 B  278 MiB   40 GiB  0.77                   
-MIN/MAX VAR: 0.98/1.02  STDDEV: 0.01
 [root@mon-01 ~]# 
 ```
 
 ```
 [root@mon-01 ~]# ceph orch host ls
 HOST                ADDR         LABELS  STATUS   
-mds-01.example.com  10.10.10.8                    
-mon-01.example.com  10.10.10.21  _admin           
-mon-02.example.com  10.10.10.15                   
-mon-03.example.com  10.10.10.35                   
-osd-01.example.com  10.10.10.13          Offline  
-osd-02.example.com  10.10.10.28                   
-osd-03.example.com  10.10.10.7                    
+mds-01.example.com  10.10.10.3                    
+mon-01.example.com  10.10.10.35  _admin           
+mon-02.example.com  10.10.10.25                   
+mon-03.example.com  10.10.10.28                   
+osd-01.example.com  10.10.10.9           Offline  
+osd-02.example.com  10.10.10.24                   
+osd-03.example.com  10.10.10.19                   
 7 hosts in cluster
+[root@mon-01 ~]# 
+```
+
+```
+[root@mon-01 ~]# ceph osd df
+ID  CLASS  WEIGHT   REWEIGHT  SIZE    RAW USE  DATA     OMAP  META     AVAIL    %USE  VAR   PGS  STATUS
+ 1    hdd  0.00980   1.00000  10 GiB   78 MiB  8.9 MiB   0 B   69 MiB  9.9 GiB  0.76  0.99    0    down
+ 3    hdd  0.00980   1.00000  10 GiB   80 MiB   11 MiB   0 B   69 MiB  9.9 GiB  0.78  1.01    0    down
+ 0    hdd  0.00980   1.00000  10 GiB   80 MiB   11 MiB   0 B   69 MiB  9.9 GiB  0.79  1.02   57      up
+ 4    hdd  0.00980   1.00000  10 GiB   78 MiB  8.6 MiB   0 B   69 MiB  9.9 GiB  0.76  0.98   56      up
+ 2    hdd  0.00980   1.00000  10 GiB   80 MiB   11 MiB   0 B   69 MiB  9.9 GiB  0.78  1.01   54      up
+ 5    hdd  0.00980   1.00000  10 GiB   78 MiB  8.9 MiB   0 B   69 MiB  9.9 GiB  0.76  0.99   59      up
+                       TOTAL  60 GiB  475 MiB   59 MiB   0 B  416 MiB   60 GiB  0.77                   
+MIN/MAX VAR: 0.98/1.02  STDDEV: 0.01
 [root@mon-01 ~]# 
 ```
 
@@ -647,29 +652,122 @@ Removed  host 'osd-01'
 ```
 [root@mon-01 ~]# ceph orch host ls
 HOST                ADDR         LABELS  STATUS  
-mds-01.example.com  10.10.10.8                   
-mon-01.example.com  10.10.10.21  _admin          
-mon-02.example.com  10.10.10.15                  
-mon-03.example.com  10.10.10.35                  
-osd-02.example.com  10.10.10.28                  
-osd-03.example.com  10.10.10.7                   
+mds-01.example.com  10.10.10.3                   
+mon-01.example.com  10.10.10.35  _admin          
+mon-02.example.com  10.10.10.25                  
+mon-03.example.com  10.10.10.28                  
+osd-02.example.com  10.10.10.24                  
+osd-03.example.com  10.10.10.19                  
 6 hosts in cluster
+[root@mon-01 ~]# 
+```
+
+
+```bash
+ceph osd crush rm osd.1
+ceph osd crush rm osd.3
+```
+
+```
+[root@mon-01 ~]# ceph osd crush rm osd.1
+removed item id 1 name 'osd.1' from crush map
+[root@mon-01 ~]# 
+[root@mon-01 ~]# ceph osd crush rm osd.3
+removed item id 3 name 'osd.3' from crush map
 [root@mon-01 ~]# 
 ```
 
 ```
 [root@mon-01 ~]# ceph osd df
 ID  CLASS  WEIGHT   REWEIGHT  SIZE    RAW USE  DATA     OMAP  META     AVAIL    %USE  VAR   PGS  STATUS
- 1    hdd  0.00980         0     0 B      0 B      0 B   0 B      0 B      0 B     0     0    0    down
- 3    hdd  0.00980         0     0 B      0 B      0 B   0 B      0 B      0 B     0     0    0    down
- 0    hdd  0.00980   1.00000  10 GiB   78 MiB  8.6 MiB   0 B   69 MiB  9.9 GiB  0.76  0.98   54      up
- 4    hdd  0.00980   1.00000  10 GiB   80 MiB   11 MiB   0 B   69 MiB  9.9 GiB  0.79  1.02   59      up
- 2    hdd  0.00980   1.00000  10 GiB   79 MiB  9.2 MiB   0 B   69 MiB  9.9 GiB  0.77  0.99   59      up
- 5    hdd  0.00980   1.00000  10 GiB   80 MiB   11 MiB   0 B   69 MiB  9.9 GiB  0.78  1.01   54      up
-                       TOTAL  40 GiB  317 MiB   39 MiB   0 B  278 MiB   40 GiB  0.77                   
-MIN/MAX VAR: 0.98/1.02  STDDEV: 0.01
+ 0    hdd  0.00980   1.00000  10 GiB   81 MiB   11 MiB   0 B   69 MiB  9.9 GiB  0.79  1.01   65      up
+ 4    hdd  0.00980   1.00000  10 GiB   79 MiB  9.1 MiB   0 B   69 MiB  9.9 GiB  0.77  0.99   67      up
+ 2    hdd  0.00980   1.00000  10 GiB   80 MiB   11 MiB   0 B   69 MiB  9.9 GiB  0.78  1.01   64      up
+ 5    hdd  0.00980   1.00000  10 GiB   78 MiB  9.0 MiB   0 B   69 MiB  9.9 GiB  0.77  0.99   62      up
+ 1               0         0     0 B      0 B      0 B   0 B      0 B      0 B     0     0    0    down
+ 3               0         0     0 B      0 B      0 B   0 B      0 B      0 B     0     0    0    down
+                       TOTAL  40 GiB  318 MiB   40 MiB   0 B  278 MiB   40 GiB  0.78                   
+MIN/MAX VAR: 0.99/1.01  STDDEV: 0.01
 [root@mon-01 ~]# 
 ```
+
+
+```bash
+ceph osd purge osd.1 --yes-i-really-mean-it
+ceph osd purge osd.3 --yes-i-really-mean-it
+```
+```
+[root@mon-01 ~]# ceph osd purge osd.1 --yes-i-really-mean-it
+purged osd.1
+[root@mon-01 ~]# ceph osd purge osd.3 --yes-i-really-mean-it
+purged osd.3
+[root@mon-01 ~]# ceph osd df
+ID  CLASS  WEIGHT   REWEIGHT  SIZE    RAW USE  DATA     OMAP  META     AVAIL    %USE  VAR   PGS  STATUS
+ 0    hdd  0.00980   1.00000  10 GiB   81 MiB   11 MiB   0 B   69 MiB  9.9 GiB  0.79  1.01   65      up
+ 4    hdd  0.00980   1.00000  10 GiB   79 MiB  9.2 MiB   0 B   69 MiB  9.9 GiB  0.77  0.99   67      up
+ 2    hdd  0.00980   1.00000  10 GiB   80 MiB   11 MiB   0 B   69 MiB  9.9 GiB  0.78  1.01   64      up
+ 5    hdd  0.00980   1.00000  10 GiB   78 MiB  9.0 MiB   0 B   69 MiB  9.9 GiB  0.77  0.99   62      up
+                       TOTAL  40 GiB  318 MiB   40 MiB   0 B  278 MiB   40 GiB  0.78                   
+MIN/MAX VAR: 0.99/1.01  STDDEV: 0.01
+[root@mon-01 ~]# 
+```
+
+```bash
+ceph auth del osd.1
+ceph auth del osd.3
+```
+```
+[root@mon-01 ~]# ceph auth del osd.1
+[root@mon-01 ~]# ceph auth del osd.3
+[root@mon-01 ~]# 
+```
+
+Add osd-04.example.com:
+```bash
+ceph orch host add osd-04.example.com
+```
+```
+[root@mon-01 ~]# ceph orch host add osd-04.example.com
+Added host 'osd-04.example.com' with addr '10.10.10.4'
+[root@mon-01 ~]# 
+```
+
+```
+[root@mon-01 ~]# ceph orch host ls
+HOST                ADDR         LABELS  STATUS  
+mds-01.example.com  10.10.10.3                   
+mon-01.example.com  10.10.10.35  _admin          
+mon-02.example.com  10.10.10.25                  
+mon-03.example.com  10.10.10.28                  
+osd-02.example.com  10.10.10.24                  
+osd-03.example.com  10.10.10.19                  
+osd-04.example.com  10.10.10.4    #<--- добавлен новый osd хост
+7 hosts in cluster
+[root@mon-01 ~]# 
+```
+
+Добавим диски vdb и vdc:
+```bash
+ceph orch daemon add osd osd-04.example.com:/dev/vdb
+ceph orch daemon add osd osd-04.example.com:/dev/vdc
+```
+```
+[root@mon-01 ~]# ceph orch daemon add osd osd-04.example.com:/dev/vdb
+[root@mon-01 ~]# ceph orch daemon add osd osd-04.example.com:/dev/vdc
+[root@mon-01 ~]# 
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```
 [root@mon-01 ~]# ceph df
@@ -702,412 +800,3 @@ osd-03.example.com  /dev/vdd  hdd   epdi14atfqeemsjbjf5t  10.0G  Yes        27m 
 [root@mon-01 ~]# 
 ```
 
-
-
-
-ceph orch host add osd-04.example.com
-ceph orch daemon add osd osd-04.example.com:/dev/vdb
-
-
-```
-[root@mon-01 ~]# ceph orch host add osd-04.example.com
-Added host 'osd-04.example.com' with addr '10.10.10.36'
-[root@mon-01 ~]# 
-```
-
-```
-[root@mon-01 ~]# ceph orch host ls
-HOST                ADDR         LABELS  STATUS  
-mds-01.example.com  10.10.10.8                   
-mon-01.example.com  10.10.10.21  _admin          
-mon-02.example.com  10.10.10.15                  
-mon-03.example.com  10.10.10.35                  
-osd-02.example.com  10.10.10.28                  
-osd-03.example.com  10.10.10.7                   
-osd-04.example.com  10.10.10.36                  
-7 hosts in cluster
-[root@mon-01 ~]# 
-```
-
-```
-[root@mon-01 ~]# ceph orch daemon add osd osd-04.example.com:/dev/vdb
-[root@mon-01 ~]# ceph orch daemon add osd osd-04.example.com:/dev/vdc
-[root@mon-01 ~]# 
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```
-[root@mon-01 ~]# ceph -w
-  cluster:
-    id:     0120dc54-bf67-11ee-9c79-d00d151775b8
-    health: HEALTH_OK
- 
-  services:
-    mon: 3 daemons, quorum mon-01,mon-03,mon-02 (age 106m)
-    mgr: mon-01.duszzi(active, since 110m), standbys: mon-03.rrskxv, mon-02.cjmoqm
-    mds: 1/1 daemons up
-    osd: 6 osds: 6 up (since 105m), 6 in (since 106m)
- 
-  data:
-    volumes: 1/1 healthy
-    pools:   4 pools, 113 pgs
-    objects: 45 objects, 6.8 MiB
-    usage:   475 MiB used, 60 GiB / 60 GiB avail
-    pgs:     113 active+clean
- 
-
-2024-01-30T16:58:16.631680+0300 mon.mon-01 [INF] osd.1 marked itself down and dead
-2024-01-30T16:58:16.729649+0300 mon.mon-01 [INF] osd.3 marked itself down and dead
-2024-01-30T16:58:17.615535+0300 mon.mon-01 [WRN] Health check failed: 2 osds down (OSD_DOWN)
-2024-01-30T16:58:17.615567+0300 mon.mon-01 [WRN] Health check failed: 1 host (2 osds) down (OSD_HOST_DOWN)
-2024-01-30T16:58:20.037842+0300 mon.mon-01 [WRN] Health check failed: Reduced data availability: 11 pgs inactive, 12 pgs peering (PG_AVAILABILITY)
-2024-01-30T16:58:20.037884+0300 mon.mon-01 [WRN] Health check failed: Degraded data redundancy: 30/135 objects degraded (22.222%), 17 pgs degraded (PG_DEGRADED)
-2024-01-30T16:58:25.800947+0300 mon.mon-01 [WRN] Health check update: Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded (PG_DEGRADED)
-2024-01-30T16:58:25.800977+0300 mon.mon-01 [INF] Health check cleared: PG_AVAILABILITY (was: Reduced data availability: 9 pgs inactive)
-2024-01-30T16:59:16.554889+0300 mon.mon-01 [WRN] Health check failed: failed to probe daemons or devices (CEPHADM_REFRESH_FAILED)
-2024-01-30T16:59:20.432228+0300 mon.mon-01 [WRN] Health check update: Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized (PG_DEGRADED)
-2024-01-30T17:00:00.000177+0300 mon.mon-01 [WRN] Health detail: HEALTH_WARN failed to probe daemons or devices; 2 osds down; 1 host (2 osds) down; Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T17:00:00.000204+0300 mon.mon-01 [WRN] [WRN] CEPHADM_REFRESH_FAILED: failed to probe daemons or devices
-2024-01-30T17:00:00.000209+0300 mon.mon-01 [WRN]     host osd-01.example.com `cephadm gather-facts` failed: Unable to reach remote host osd-01.example.com. SSH connection closed
-2024-01-30T17:00:00.000213+0300 mon.mon-01 [WRN] [WRN] OSD_DOWN: 2 osds down
-2024-01-30T17:00:00.000217+0300 mon.mon-01 [WRN]     osd.1 (root=default,host=osd-01) is down
-2024-01-30T17:00:00.000221+0300 mon.mon-01 [WRN]     osd.3 (root=default,host=osd-01) is down
-2024-01-30T17:00:00.000225+0300 mon.mon-01 [WRN] [WRN] OSD_HOST_DOWN: 1 host (2 osds) down
-2024-01-30T17:00:00.000229+0300 mon.mon-01 [WRN]     host osd-01 (root=default) (2 osds) is down
-2024-01-30T17:00:00.000235+0300 mon.mon-01 [WRN] [WRN] PG_DEGRADED: Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T17:00:00.000240+0300 mon.mon-01 [WRN]     pg 2.8 is stuck undersized for 98s, current state active+undersized, last acting [0,2]
-2024-01-30T17:00:00.000253+0300 mon.mon-01 [WRN]     pg 2.9 is stuck undersized for 98s, current state active+undersized+degraded, last acting [5,0]
-2024-01-30T17:00:00.000315+0300 mon.mon-01 [WRN]     pg 2.a is stuck undersized for 98s, current state active+undersized, last acting [5,0]
-2024-01-30T17:00:00.000323+0300 mon.mon-01 [WRN]     pg 2.b is stuck undersized for 98s, current state active+undersized, last acting [4,2]
-2024-01-30T17:00:00.000332+0300 mon.mon-01 [WRN]     pg 2.c is stuck undersized for 98s, current state active+undersized+degraded, last acting [5,0]
-2024-01-30T17:00:00.000338+0300 mon.mon-01 [WRN]     pg 2.d is stuck undersized for 98s, current state active+undersized, last acting [0,5]
-2024-01-30T17:00:00.000345+0300 mon.mon-01 [WRN]     pg 2.e is stuck undersized for 98s, current state active+undersized, last acting [2,0]
-2024-01-30T17:00:00.000350+0300 mon.mon-01 [WRN]     pg 3.8 is stuck undersized for 98s, current state active+undersized, last acting [5,0]
-2024-01-30T17:00:00.000391+0300 mon.mon-01 [WRN]     pg 3.9 is stuck undersized for 98s, current state active+undersized, last acting [0,2]
-2024-01-30T17:00:00.000397+0300 mon.mon-01 [WRN]     pg 3.a is stuck undersized for 98s, current state active+undersized, last acting [0,5]
-2024-01-30T17:00:00.000403+0300 mon.mon-01 [WRN]     pg 3.b is stuck undersized for 98s, current state active+undersized, last acting [2,4]
-2024-01-30T17:00:00.000408+0300 mon.mon-01 [WRN]     pg 3.c is stuck undersized for 98s, current state active+undersized, last acting [0,5]
-2024-01-30T17:00:00.000414+0300 mon.mon-01 [WRN]     pg 3.d is stuck undersized for 98s, current state active+undersized, last acting [0,2]
-2024-01-30T17:00:00.000420+0300 mon.mon-01 [WRN]     pg 3.f is stuck undersized for 98s, current state active+undersized, last acting [0,2]
-2024-01-30T17:00:00.000426+0300 mon.mon-01 [WRN]     pg 3.22 is stuck undersized for 98s, current state active+undersized, last acting [5,4]
-2024-01-30T17:00:00.000431+0300 mon.mon-01 [WRN]     pg 3.24 is stuck undersized for 98s, current state active+undersized, last acting [2,0]
-2024-01-30T17:00:00.000437+0300 mon.mon-01 [WRN]     pg 3.25 is stuck undersized for 98s, current state active+undersized, last acting [5,0]
-2024-01-30T17:00:00.000443+0300 mon.mon-01 [WRN]     pg 3.26 is stuck undersized for 98s, current state active+undersized, last acting [4,5]
-2024-01-30T17:00:00.000448+0300 mon.mon-01 [WRN]     pg 3.27 is stuck undersized for 98s, current state active+undersized, last acting [5,4]
-2024-01-30T17:00:00.000453+0300 mon.mon-01 [WRN]     pg 3.28 is stuck undersized for 98s, current state active+undersized, last acting [5,0]
-2024-01-30T17:00:00.000460+0300 mon.mon-01 [WRN]     pg 3.29 is stuck undersized for 98s, current state active+undersized, last acting [5,0]
-2024-01-30T17:00:00.000466+0300 mon.mon-01 [WRN]     pg 3.2a is stuck undersized for 98s, current state active+undersized, last acting [4,2]
-2024-01-30T17:00:00.000471+0300 mon.mon-01 [WRN]     pg 3.2b is stuck undersized for 98s, current state active+undersized, last acting [2,0]
-2024-01-30T17:00:00.000476+0300 mon.mon-01 [WRN]     pg 3.2c is stuck undersized for 98s, current state active+undersized, last acting [4,5]
-2024-01-30T17:00:00.000667+0300 mon.mon-01 [WRN]     pg 3.2d is stuck undersized for 98s, current state active+undersized, last acting [5,4]
-2024-01-30T17:00:00.000674+0300 mon.mon-01 [WRN]     pg 3.2e is stuck undersized for 98s, current state active+undersized, last acting [2,0]
-2024-01-30T17:00:00.000680+0300 mon.mon-01 [WRN]     pg 3.2f is stuck undersized for 98s, current state active+undersized, last acting [0,5]
-2024-01-30T17:00:00.000686+0300 mon.mon-01 [WRN]     pg 3.30 is stuck undersized for 98s, current state active+undersized+degraded, last acting [4,2]
-2024-01-30T17:00:00.000691+0300 mon.mon-01 [WRN]     pg 3.31 is stuck undersized for 98s, current state active+undersized, last acting [5,0]
-2024-01-30T17:00:00.000697+0300 mon.mon-01 [WRN]     pg 3.32 is stuck undersized for 98s, current state active+undersized, last acting [5,0]
-2024-01-30T17:00:00.000703+0300 mon.mon-01 [WRN]     pg 3.33 is stuck undersized for 98s, current state active+undersized, last acting [5,0]
-2024-01-30T17:00:00.000709+0300 mon.mon-01 [WRN]     pg 3.34 is stuck undersized for 98s, current state active+undersized, last acting [4,2]
-2024-01-30T17:00:00.000714+0300 mon.mon-01 [WRN]     pg 3.35 is stuck undersized for 98s, current state active+undersized, last acting [0,2]
-2024-01-30T17:00:00.000719+0300 mon.mon-01 [WRN]     pg 3.36 is stuck undersized for 98s, current state active+undersized, last acting [0,5]
-2024-01-30T17:00:00.000726+0300 mon.mon-01 [WRN]     pg 3.37 is stuck undersized for 98s, current state active+undersized, last acting [0,5]
-2024-01-30T17:00:00.000732+0300 mon.mon-01 [WRN]     pg 3.38 is stuck undersized for 98s, current state active+undersized, last acting [5,0]
-2024-01-30T17:00:00.000741+0300 mon.mon-01 [WRN]     pg 3.39 is stuck undersized for 98s, current state active+undersized, last acting [0,5]
-2024-01-30T17:00:00.000747+0300 mon.mon-01 [WRN]     pg 3.3a is stuck undersized for 98s, current state active+undersized, last acting [0,2]
-2024-01-30T17:00:00.000753+0300 mon.mon-01 [WRN]     pg 3.3b is stuck undersized for 98s, current state active+undersized, last acting [2,0]
-2024-01-30T17:00:00.000759+0300 mon.mon-01 [WRN]     pg 3.3c is stuck undersized for 98s, current state active+undersized, last acting [4,2]
-2024-01-30T17:00:00.000768+0300 mon.mon-01 [WRN]     pg 3.3d is stuck undersized for 98s, current state active+undersized, last acting [5,4]
-2024-01-30T17:00:00.000774+0300 mon.mon-01 [WRN]     pg 3.3e is stuck undersized for 98s, current state active+undersized, last acting [5,0]
-2024-01-30T17:00:00.000779+0300 mon.mon-01 [WRN]     pg 3.3f is stuck undersized for 98s, current state active+undersized, last acting [4,2]
-2024-01-30T17:00:00.000784+0300 mon.mon-01 [WRN]     pg 4.1 is stuck undersized for 98s, current state active+undersized, last acting [4,2]
-2024-01-30T17:00:00.000791+0300 mon.mon-01 [WRN]     pg 4.8 is stuck undersized for 98s, current state active+undersized, last acting [0,5]
-2024-01-30T17:00:00.001076+0300 mon.mon-01 [WRN]     pg 4.a is stuck undersized for 98s, current state active+undersized, last acting [4,5]
-2024-01-30T17:00:00.001082+0300 mon.mon-01 [WRN]     pg 4.b is stuck undersized for 98s, current state active+undersized+degraded, last acting [2,4]
-2024-01-30T17:00:00.001086+0300 mon.mon-01 [WRN]     pg 4.c is stuck undersized for 98s, current state active+undersized+degraded, last acting [4,5]
-2024-01-30T17:00:00.001091+0300 mon.mon-01 [WRN]     pg 4.d is stuck undersized for 98s, current state active+undersized+degraded, last acting [4,5]
-2024-01-30T17:00:00.001095+0300 mon.mon-01 [WRN]     pg 4.e is stuck undersized for 98s, current state active+undersized+degraded, last acting [4,2]
-2024-01-30T17:00:00.001099+0300 mon.mon-01 [WRN]     pg 4.f is stuck undersized for 98s, current state active+undersized+degraded, last acting [2,4]
-2024-01-30T17:02:27.917412+0300 mon.mon-01 [WRN] Health check failed: 1 hosts fail cephadm check (CEPHADM_HOST_CHECK_FAILED)
-2024-01-30T17:02:27.917440+0300 mon.mon-01 [INF] Health check cleared: CEPHADM_REFRESH_FAILED (was: failed to probe daemons or devices)
-2024-01-30T17:08:19.655100+0300 mon.mon-01 [INF] Marking osd.1 out (has been down for 601 seconds)
-2024-01-30T17:08:19.655127+0300 mon.mon-01 [INF] Marking osd.3 out (has been down for 601 seconds)
-2024-01-30T17:08:19.655361+0300 mon.mon-01 [INF] Health check cleared: OSD_DOWN (was: 2 osds down)
-2024-01-30T17:08:19.655370+0300 mon.mon-01 [INF] Health check cleared: OSD_HOST_DOWN (was: 1 host (2 osds) down)
-2024-01-30T17:10:00.000183+0300 mon.mon-01 [WRN] Health detail: HEALTH_WARN 1 hosts fail cephadm check; Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T17:10:00.000212+0300 mon.mon-01 [WRN] [WRN] CEPHADM_HOST_CHECK_FAILED: 1 hosts fail cephadm check
-2024-01-30T17:10:00.000218+0300 mon.mon-01 [WRN]     host osd-01.example.com (10.10.10.13) failed check: Can't communicate with remote host `10.10.10.13`, possibly because the host is not reachable or python3 is not installed on the host. [Errno 110] Connect call failed ('10.10.10.13', 22)
-2024-01-30T17:10:00.000223+0300 mon.mon-01 [WRN] [WRN] PG_DEGRADED: Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T17:10:00.000229+0300 mon.mon-01 [WRN]     pg 2.8 is stuck undersized for 11m, current state active+undersized, last acting [0,2]
-2024-01-30T17:10:00.000233+0300 mon.mon-01 [WRN]     pg 2.9 is stuck undersized for 11m, current state active+undersized+degraded, last acting [5,0]
-2024-01-30T17:10:00.000238+0300 mon.mon-01 [WRN]     pg 2.a is stuck undersized for 11m, current state active+undersized, last acting [5,0]
-2024-01-30T17:10:00.000290+0300 mon.mon-01 [WRN]     pg 2.b is stuck undersized for 11m, current state active+undersized, last acting [4,2]
-2024-01-30T17:10:00.000308+0300 mon.mon-01 [WRN]     pg 2.c is stuck undersized for 11m, current state active+undersized+degraded, last acting [5,0]
-2024-01-30T17:10:00.000314+0300 mon.mon-01 [WRN]     pg 2.d is stuck undersized for 11m, current state active+undersized, last acting [0,5]
-2024-01-30T17:10:00.000318+0300 mon.mon-01 [WRN]     pg 2.e is stuck undersized for 11m, current state active+undersized, last acting [2,0]
-2024-01-30T17:10:00.000323+0300 mon.mon-01 [WRN]     pg 3.8 is stuck undersized for 11m, current state active+undersized, last acting [5,0]
-2024-01-30T17:10:00.000329+0300 mon.mon-01 [WRN]     pg 3.9 is stuck undersized for 11m, current state active+undersized, last acting [0,2]
-2024-01-30T17:10:00.000333+0300 mon.mon-01 [WRN]     pg 3.a is stuck undersized for 11m, current state active+undersized, last acting [0,5]
-2024-01-30T17:10:00.000338+0300 mon.mon-01 [WRN]     pg 3.b is stuck undersized for 11m, current state active+undersized, last acting [2,4]
-2024-01-30T17:10:00.000342+0300 mon.mon-01 [WRN]     pg 3.c is stuck undersized for 11m, current state active+undersized, last acting [0,5]
-2024-01-30T17:10:00.000346+0300 mon.mon-01 [WRN]     pg 3.d is stuck undersized for 11m, current state active+undersized, last acting [0,2]
-2024-01-30T17:10:00.000350+0300 mon.mon-01 [WRN]     pg 3.f is stuck undersized for 11m, current state active+undersized, last acting [0,2]
-2024-01-30T17:10:00.000354+0300 mon.mon-01 [WRN]     pg 3.22 is stuck undersized for 11m, current state active+undersized, last acting [5,4]
-2024-01-30T17:10:00.000358+0300 mon.mon-01 [WRN]     pg 3.24 is stuck undersized for 11m, current state active+undersized, last acting [2,0]
-2024-01-30T17:10:00.000362+0300 mon.mon-01 [WRN]     pg 3.25 is stuck undersized for 11m, current state active+undersized, last acting [5,0]
-2024-01-30T17:10:00.000367+0300 mon.mon-01 [WRN]     pg 3.26 is stuck undersized for 11m, current state active+undersized, last acting [4,5]
-2024-01-30T17:10:00.000371+0300 mon.mon-01 [WRN]     pg 3.27 is stuck undersized for 11m, current state active+undersized, last acting [5,4]
-2024-01-30T17:10:00.000376+0300 mon.mon-01 [WRN]     pg 3.28 is stuck undersized for 11m, current state active+undersized, last acting [5,0]
-2024-01-30T17:10:00.000380+0300 mon.mon-01 [WRN]     pg 3.29 is stuck undersized for 11m, current state active+undersized, last acting [5,0]
-2024-01-30T17:10:00.000384+0300 mon.mon-01 [WRN]     pg 3.2a is stuck undersized for 11m, current state active+undersized, last acting [4,2]
-2024-01-30T17:10:00.000388+0300 mon.mon-01 [WRN]     pg 3.2b is stuck undersized for 11m, current state active+undersized, last acting [2,0]
-2024-01-30T17:10:00.000392+0300 mon.mon-01 [WRN]     pg 3.2c is stuck undersized for 11m, current state active+undersized, last acting [4,5]
-2024-01-30T17:10:00.000396+0300 mon.mon-01 [WRN]     pg 3.2d is stuck undersized for 11m, current state active+undersized, last acting [5,4]
-2024-01-30T17:10:00.000400+0300 mon.mon-01 [WRN]     pg 3.2e is stuck undersized for 11m, current state active+undersized, last acting [2,0]
-2024-01-30T17:10:00.000405+0300 mon.mon-01 [WRN]     pg 3.2f is stuck undersized for 11m, current state active+undersized, last acting [0,5]
-2024-01-30T17:10:00.000409+0300 mon.mon-01 [WRN]     pg 3.30 is stuck undersized for 11m, current state active+undersized+degraded, last acting [4,2]
-2024-01-30T17:10:00.000414+0300 mon.mon-01 [WRN]     pg 3.31 is stuck undersized for 11m, current state active+undersized, last acting [5,0]
-2024-01-30T17:10:00.000419+0300 mon.mon-01 [WRN]     pg 3.32 is stuck undersized for 11m, current state active+undersized, last acting [5,0]
-2024-01-30T17:10:00.000423+0300 mon.mon-01 [WRN]     pg 3.33 is stuck undersized for 11m, current state active+undersized, last acting [5,0]
-2024-01-30T17:10:00.000427+0300 mon.mon-01 [WRN]     pg 3.34 is stuck undersized for 11m, current state active+undersized, last acting [4,2]
-2024-01-30T17:10:00.000432+0300 mon.mon-01 [WRN]     pg 3.35 is stuck undersized for 11m, current state active+undersized, last acting [0,2]
-2024-01-30T17:10:00.000450+0300 mon.mon-01 [WRN]     pg 3.36 is stuck undersized for 11m, current state active+undersized, last acting [0,5]
-2024-01-30T17:10:00.000454+0300 mon.mon-01 [WRN]     pg 3.37 is stuck undersized for 11m, current state active+undersized, last acting [0,5]
-2024-01-30T17:10:00.000458+0300 mon.mon-01 [WRN]     pg 3.38 is stuck undersized for 11m, current state active+undersized, last acting [5,0]
-2024-01-30T17:10:00.000462+0300 mon.mon-01 [WRN]     pg 3.39 is stuck undersized for 11m, current state active+undersized, last acting [0,5]
-2024-01-30T17:10:00.000466+0300 mon.mon-01 [WRN]     pg 3.3a is stuck undersized for 11m, current state active+undersized, last acting [0,2]
-2024-01-30T17:10:00.000471+0300 mon.mon-01 [WRN]     pg 3.3b is stuck undersized for 11m, current state active+undersized, last acting [2,0]
-2024-01-30T17:10:00.000475+0300 mon.mon-01 [WRN]     pg 3.3c is stuck undersized for 11m, current state active+undersized, last acting [4,2]
-2024-01-30T17:10:00.000479+0300 mon.mon-01 [WRN]     pg 3.3d is stuck undersized for 11m, current state active+undersized, last acting [5,4]
-2024-01-30T17:10:00.000483+0300 mon.mon-01 [WRN]     pg 3.3e is stuck undersized for 11m, current state active+undersized, last acting [5,0]
-2024-01-30T17:10:00.000487+0300 mon.mon-01 [WRN]     pg 3.3f is stuck undersized for 11m, current state active+undersized, last acting [4,2]
-2024-01-30T17:10:00.000491+0300 mon.mon-01 [WRN]     pg 4.1 is stuck undersized for 11m, current state active+undersized, last acting [4,2]
-2024-01-30T17:10:00.000495+0300 mon.mon-01 [WRN]     pg 4.8 is stuck undersized for 11m, current state active+undersized, last acting [0,5]
-2024-01-30T17:10:00.000500+0300 mon.mon-01 [WRN]     pg 4.a is stuck undersized for 11m, current state active+undersized, last acting [4,5]
-2024-01-30T17:10:00.000504+0300 mon.mon-01 [WRN]     pg 4.b is stuck undersized for 11m, current state active+undersized+degraded, last acting [2,4]
-2024-01-30T17:10:00.000509+0300 mon.mon-01 [WRN]     pg 4.c is stuck undersized for 11m, current state active+undersized+degraded, last acting [4,5]
-2024-01-30T17:10:00.000513+0300 mon.mon-01 [WRN]     pg 4.d is stuck undersized for 11m, current state active+undersized+degraded, last acting [4,5]
-2024-01-30T17:10:00.000517+0300 mon.mon-01 [WRN]     pg 4.e is stuck undersized for 11m, current state active+undersized+degraded, last acting [4,2]
-2024-01-30T17:10:00.000521+0300 mon.mon-01 [WRN]     pg 4.f is stuck undersized for 11m, current state active+undersized+degraded, last acting [2,4]
-2024-01-30T17:18:31.081356+0300 mon.mon-01 [WRN] Health check failed: Failed to apply 3 service(s): ceph-exporter,crash,node-exporter (CEPHADM_APPLY_SPEC_FAIL)
-2024-01-30T17:18:31.081378+0300 mon.mon-01 [WRN] Health check failed: 1 stray host(s) with 2 daemon(s) not managed by cephadm (CEPHADM_STRAY_HOST)
-2024-01-30T17:18:34.315653+0300 mgr.mon-01.duszzi [ERR] Unhandled exception from module 'cephadm' while running on mgr.mon-01.duszzi: 'osd-01.example.com'
-2024-01-30T17:18:36.859558+0300 mon.mon-01 [ERR] Health check failed: Module 'cephadm' has failed: 'osd-01.example.com' (MGR_MODULE_ERROR)
-2024-01-30T17:20:00.000147+0300 mon.mon-01 [ERR] Health detail: HEALTH_ERR Failed to apply 3 service(s): ceph-exporter,crash,node-exporter; 1 hosts fail cephadm check; 1 stray host(s) with 2 daemon(s) not managed by cephadm; Module 'cephadm' has failed: 'osd-01.example.com'; Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T17:20:00.000185+0300 mon.mon-01 [ERR] [WRN] CEPHADM_APPLY_SPEC_FAIL: Failed to apply 3 service(s): ceph-exporter,crash,node-exporter
-2024-01-30T17:20:00.000190+0300 mon.mon-01 [ERR]     ceph-exporter: 'osd-01.example.com'
-2024-01-30T17:20:00.000195+0300 mon.mon-01 [ERR]     crash: 'osd-01.example.com'
-2024-01-30T17:20:00.000199+0300 mon.mon-01 [ERR]     node-exporter: 'osd-01.example.com'
-2024-01-30T17:20:00.000204+0300 mon.mon-01 [ERR] [WRN] CEPHADM_HOST_CHECK_FAILED: 1 hosts fail cephadm check
-2024-01-30T17:20:00.000210+0300 mon.mon-01 [ERR]     host osd-01.example.com (10.10.10.13) failed check: Can't communicate with remote host `10.10.10.13`, possibly because the host is not reachable or python3 is not installed on the host. [Errno 110] Connect call failed ('10.10.10.13', 22)
-2024-01-30T17:20:00.000215+0300 mon.mon-01 [ERR] [WRN] CEPHADM_STRAY_HOST: 1 stray host(s) with 2 daemon(s) not managed by cephadm
-2024-01-30T17:20:00.000223+0300 mon.mon-01 [ERR]     stray host osd-01.example.com has 2 stray daemons: ['osd.1', 'osd.3']
-2024-01-30T17:20:00.000229+0300 mon.mon-01 [ERR] [ERR] MGR_MODULE_ERROR: Module 'cephadm' has failed: 'osd-01.example.com'
-2024-01-30T17:20:00.000235+0300 mon.mon-01 [ERR]     Module 'cephadm' has failed: 'osd-01.example.com'
-2024-01-30T17:20:00.000241+0300 mon.mon-01 [ERR] [WRN] PG_DEGRADED: Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T17:20:00.000246+0300 mon.mon-01 [ERR]     pg 2.8 is stuck undersized for 21m, current state active+undersized, last acting [0,2]
-2024-01-30T17:20:00.000251+0300 mon.mon-01 [ERR]     pg 2.9 is stuck undersized for 21m, current state active+undersized+degraded, last acting [5,0]
-2024-01-30T17:20:00.000256+0300 mon.mon-01 [ERR]     pg 2.a is stuck undersized for 21m, current state active+undersized, last acting [5,0]
-2024-01-30T17:20:00.000266+0300 mon.mon-01 [ERR]     pg 2.b is stuck undersized for 21m, current state active+undersized, last acting [4,2]
-2024-01-30T17:20:00.000272+0300 mon.mon-01 [ERR]     pg 2.c is stuck undersized for 21m, current state active+undersized+degraded, last acting [5,0]
-2024-01-30T17:20:00.000321+0300 mon.mon-01 [ERR]     pg 2.d is stuck undersized for 21m, current state active+undersized, last acting [0,5]
-2024-01-30T17:20:00.000327+0300 mon.mon-01 [ERR]     pg 2.e is stuck undersized for 21m, current state active+undersized, last acting [2,0]
-2024-01-30T17:20:00.000332+0300 mon.mon-01 [ERR]     pg 3.8 is stuck undersized for 21m, current state active+undersized, last acting [5,0]
-2024-01-30T17:20:00.000338+0300 mon.mon-01 [ERR]     pg 3.9 is stuck undersized for 21m, current state active+undersized, last acting [0,2]
-2024-01-30T17:20:00.000344+0300 mon.mon-01 [ERR]     pg 3.a is stuck undersized for 21m, current state active+undersized, last acting [0,5]
-2024-01-30T17:20:00.000349+0300 mon.mon-01 [ERR]     pg 3.b is stuck undersized for 21m, current state active+undersized, last acting [2,4]
-2024-01-30T17:20:00.000354+0300 mon.mon-01 [ERR]     pg 3.c is stuck undersized for 21m, current state active+undersized, last acting [0,5]
-2024-01-30T17:20:00.000360+0300 mon.mon-01 [ERR]     pg 3.d is stuck undersized for 21m, current state active+undersized, last acting [0,2]
-2024-01-30T17:20:00.000365+0300 mon.mon-01 [ERR]     pg 3.f is stuck undersized for 21m, current state active+undersized, last acting [0,2]
-2024-01-30T17:20:00.000371+0300 mon.mon-01 [ERR]     pg 3.22 is stuck undersized for 21m, current state active+undersized, last acting [5,4]
-2024-01-30T17:20:00.000377+0300 mon.mon-01 [ERR]     pg 3.24 is stuck undersized for 21m, current state active+undersized, last acting [2,0]
-2024-01-30T17:20:00.000383+0300 mon.mon-01 [ERR]     pg 3.25 is stuck undersized for 21m, current state active+undersized, last acting [5,0]
-2024-01-30T17:20:00.000388+0300 mon.mon-01 [ERR]     pg 3.26 is stuck undersized for 21m, current state active+undersized, last acting [4,5]
-2024-01-30T17:20:00.000394+0300 mon.mon-01 [ERR]     pg 3.27 is stuck undersized for 21m, current state active+undersized, last acting [5,4]
-2024-01-30T17:20:00.000400+0300 mon.mon-01 [ERR]     pg 3.28 is stuck undersized for 21m, current state active+undersized, last acting [5,0]
-2024-01-30T17:20:00.000406+0300 mon.mon-01 [ERR]     pg 3.29 is stuck undersized for 21m, current state active+undersized, last acting [5,0]
-2024-01-30T17:20:00.000471+0300 mon.mon-01 [ERR]     pg 3.2a is stuck undersized for 21m, current state active+undersized, last acting [4,2]
-2024-01-30T17:20:00.000476+0300 mon.mon-01 [ERR]     pg 3.2b is stuck undersized for 21m, current state active+undersized, last acting [2,0]
-2024-01-30T17:20:00.000482+0300 mon.mon-01 [ERR]     pg 3.2c is stuck undersized for 21m, current state active+undersized, last acting [4,5]
-2024-01-30T17:20:00.000490+0300 mon.mon-01 [ERR]     pg 3.2d is stuck undersized for 21m, current state active+undersized, last acting [5,4]
-2024-01-30T17:20:00.000495+0300 mon.mon-01 [ERR]     pg 3.2e is stuck undersized for 21m, current state active+undersized, last acting [2,0]
-2024-01-30T17:20:00.000501+0300 mon.mon-01 [ERR]     pg 3.2f is stuck undersized for 21m, current state active+undersized, last acting [0,5]
-2024-01-30T17:20:00.000507+0300 mon.mon-01 [ERR]     pg 3.30 is stuck undersized for 21m, current state active+undersized+degraded, last acting [4,2]
-2024-01-30T17:20:00.000512+0300 mon.mon-01 [ERR]     pg 3.31 is stuck undersized for 21m, current state active+undersized, last acting [5,0]
-2024-01-30T17:20:00.000517+0300 mon.mon-01 [ERR]     pg 3.32 is stuck undersized for 21m, current state active+undersized, last acting [5,0]
-2024-01-30T17:20:00.000523+0300 mon.mon-01 [ERR]     pg 3.33 is stuck undersized for 21m, current state active+undersized, last acting [5,0]
-2024-01-30T17:20:00.000529+0300 mon.mon-01 [ERR]     pg 3.34 is stuck undersized for 21m, current state active+undersized, last acting [4,2]
-2024-01-30T17:20:00.000535+0300 mon.mon-01 [ERR]     pg 3.35 is stuck undersized for 21m, current state active+undersized, last acting [0,2]
-2024-01-30T17:20:00.000540+0300 mon.mon-01 [ERR]     pg 3.36 is stuck undersized for 21m, current state active+undersized, last acting [0,5]
-2024-01-30T17:20:00.000546+0300 mon.mon-01 [ERR]     pg 3.37 is stuck undersized for 21m, current state active+undersized, last acting [0,5]
-2024-01-30T17:20:00.000552+0300 mon.mon-01 [ERR]     pg 3.38 is stuck undersized for 21m, current state active+undersized, last acting [5,0]
-2024-01-30T17:20:00.000558+0300 mon.mon-01 [ERR]     pg 3.39 is stuck undersized for 21m, current state active+undersized, last acting [0,5]
-2024-01-30T17:20:00.000563+0300 mon.mon-01 [ERR]     pg 3.3a is stuck undersized for 21m, current state active+undersized, last acting [0,2]
-2024-01-30T17:20:00.000568+0300 mon.mon-01 [ERR]     pg 3.3b is stuck undersized for 21m, current state active+undersized, last acting [2,0]
-2024-01-30T17:20:00.000575+0300 mon.mon-01 [ERR]     pg 3.3c is stuck undersized for 21m, current state active+undersized, last acting [4,2]
-2024-01-30T17:20:00.000582+0300 mon.mon-01 [ERR]     pg 3.3d is stuck undersized for 21m, current state active+undersized, last acting [5,4]
-2024-01-30T17:20:00.000587+0300 mon.mon-01 [ERR]     pg 3.3e is stuck undersized for 21m, current state active+undersized, last acting [5,0]
-2024-01-30T17:20:00.000592+0300 mon.mon-01 [ERR]     pg 3.3f is stuck undersized for 21m, current state active+undersized, last acting [4,2]
-2024-01-30T17:20:00.000598+0300 mon.mon-01 [ERR]     pg 4.1 is stuck undersized for 21m, current state active+undersized, last acting [4,2]
-2024-01-30T17:20:00.000603+0300 mon.mon-01 [ERR]     pg 4.8 is stuck undersized for 21m, current state active+undersized, last acting [0,5]
-2024-01-30T17:20:00.000608+0300 mon.mon-01 [ERR]     pg 4.a is stuck undersized for 21m, current state active+undersized, last acting [4,5]
-2024-01-30T17:20:00.000613+0300 mon.mon-01 [ERR]     pg 4.b is stuck undersized for 21m, current state active+undersized+degraded, last acting [2,4]
-2024-01-30T17:20:00.000619+0300 mon.mon-01 [ERR]     pg 4.c is stuck undersized for 21m, current state active+undersized+degraded, last acting [4,5]
-2024-01-30T17:20:00.000625+0300 mon.mon-01 [ERR]     pg 4.d is stuck undersized for 21m, current state active+undersized+degraded, last acting [4,5]
-2024-01-30T17:20:00.000631+0300 mon.mon-01 [ERR]     pg 4.e is stuck undersized for 21m, current state active+undersized+degraded, last acting [4,2]
-2024-01-30T17:20:00.000636+0300 mon.mon-01 [ERR]     pg 4.f is stuck undersized for 21m, current state active+undersized+degraded, last acting [2,4]
-2024-01-30T17:30:00.000132+0300 mon.mon-01 [ERR] overall HEALTH_ERR Failed to apply 3 service(s): ceph-exporter,crash,node-exporter; 1 hosts fail cephadm check; 1 stray host(s) with 2 daemon(s) not managed by cephadm; Module 'cephadm' has failed: 'osd-01.example.com'; Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T17:31:40.164414+0300 mon.mon-01 [WRN] Health check failed: 1 osds exist in the crush map but not in the osdmap (OSD_ORPHAN)
-2024-01-30T17:40:00.000187+0300 mon.mon-01 [ERR] Health detail: HEALTH_ERR Failed to apply 3 service(s): ceph-exporter,crash,node-exporter; 1 hosts fail cephadm check; 1 stray host(s) with 2 daemon(s) not managed by cephadm; Module 'cephadm' has failed: 'osd-01.example.com'; 1 osds exist in the crush map but not in the osdmap; Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T17:40:00.000214+0300 mon.mon-01 [ERR] [WRN] CEPHADM_APPLY_SPEC_FAIL: Failed to apply 3 service(s): ceph-exporter,crash,node-exporter
-2024-01-30T17:40:00.000219+0300 mon.mon-01 [ERR]     ceph-exporter: 'osd-01.example.com'
-2024-01-30T17:40:00.000223+0300 mon.mon-01 [ERR]     crash: 'osd-01.example.com'
-2024-01-30T17:40:00.000227+0300 mon.mon-01 [ERR]     node-exporter: 'osd-01.example.com'
-2024-01-30T17:40:00.000231+0300 mon.mon-01 [ERR] [WRN] CEPHADM_HOST_CHECK_FAILED: 1 hosts fail cephadm check
-2024-01-30T17:40:00.000235+0300 mon.mon-01 [ERR]     host osd-01.example.com (10.10.10.13) failed check: Can't communicate with remote host `10.10.10.13`, possibly because the host is not reachable or python3 is not installed on the host. [Errno 110] Connect call failed ('10.10.10.13', 22)
-2024-01-30T17:40:00.000240+0300 mon.mon-01 [ERR] [WRN] CEPHADM_STRAY_HOST: 1 stray host(s) with 2 daemon(s) not managed by cephadm
-2024-01-30T17:40:00.000244+0300 mon.mon-01 [ERR]     stray host osd-01.example.com has 2 stray daemons: ['osd.1', 'osd.3']
-2024-01-30T17:40:00.000249+0300 mon.mon-01 [ERR] [ERR] MGR_MODULE_ERROR: Module 'cephadm' has failed: 'osd-01.example.com'
-2024-01-30T17:40:00.000253+0300 mon.mon-01 [ERR]     Module 'cephadm' has failed: 'osd-01.example.com'
-2024-01-30T17:40:00.000257+0300 mon.mon-01 [ERR] [WRN] OSD_ORPHAN: 1 osds exist in the crush map but not in the osdmap
-2024-01-30T17:40:00.000261+0300 mon.mon-01 [ERR]     osd.1 exists in crush map but not in osdmap
-2024-01-30T17:40:00.000265+0300 mon.mon-01 [ERR] [WRN] PG_DEGRADED: Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T17:40:00.000272+0300 mon.mon-01 [ERR]     pg 2.8 is stuck undersized for 41m, current state active+undersized, last acting [0,2]
-2024-01-30T17:40:00.000276+0300 mon.mon-01 [ERR]     pg 2.9 is stuck undersized for 41m, current state active+undersized+degraded, last acting [5,0]
-2024-01-30T17:40:00.000280+0300 mon.mon-01 [ERR]     pg 2.a is stuck undersized for 41m, current state active+undersized, last acting [5,0]
-2024-01-30T17:40:00.000284+0300 mon.mon-01 [ERR]     pg 2.b is stuck undersized for 41m, current state active+undersized, last acting [4,2]
-2024-01-30T17:40:00.000289+0300 mon.mon-01 [ERR]     pg 2.c is stuck undersized for 41m, current state active+undersized+degraded, last acting [5,0]
-2024-01-30T17:40:00.000292+0300 mon.mon-01 [ERR]     pg 2.d is stuck undersized for 41m, current state active+undersized, last acting [0,5]
-2024-01-30T17:40:00.000297+0300 mon.mon-01 [ERR]     pg 2.e is stuck undersized for 41m, current state active+undersized, last acting [2,0]
-2024-01-30T17:40:00.000301+0300 mon.mon-01 [ERR]     pg 3.8 is stuck undersized for 41m, current state active+undersized, last acting [5,0]
-2024-01-30T17:40:00.000304+0300 mon.mon-01 [ERR]     pg 3.9 is stuck undersized for 41m, current state active+undersized, last acting [0,2]
-2024-01-30T17:40:00.000308+0300 mon.mon-01 [ERR]     pg 3.a is stuck undersized for 41m, current state active+undersized, last acting [0,5]
-2024-01-30T17:40:00.000312+0300 mon.mon-01 [ERR]     pg 3.b is stuck undersized for 41m, current state active+undersized, last acting [2,4]
-2024-01-30T17:40:00.000316+0300 mon.mon-01 [ERR]     pg 3.c is stuck undersized for 41m, current state active+undersized, last acting [0,5]
-2024-01-30T17:40:00.000320+0300 mon.mon-01 [ERR]     pg 3.d is stuck undersized for 41m, current state active+undersized, last acting [0,2]
-2024-01-30T17:40:00.000324+0300 mon.mon-01 [ERR]     pg 3.f is stuck undersized for 41m, current state active+undersized, last acting [0,2]
-2024-01-30T17:40:00.000328+0300 mon.mon-01 [ERR]     pg 3.22 is stuck undersized for 41m, current state active+undersized, last acting [5,4]
-2024-01-30T17:40:00.000332+0300 mon.mon-01 [ERR]     pg 3.24 is stuck undersized for 41m, current state active+undersized, last acting [2,0]
-2024-01-30T17:40:00.000336+0300 mon.mon-01 [ERR]     pg 3.25 is stuck undersized for 41m, current state active+undersized, last acting [5,0]
-2024-01-30T17:40:00.000339+0300 mon.mon-01 [ERR]     pg 3.26 is stuck undersized for 41m, current state active+undersized, last acting [4,5]
-2024-01-30T17:40:00.000343+0300 mon.mon-01 [ERR]     pg 3.27 is stuck undersized for 41m, current state active+undersized, last acting [5,4]
-2024-01-30T17:40:00.000348+0300 mon.mon-01 [ERR]     pg 3.28 is stuck undersized for 41m, current state active+undersized, last acting [5,0]
-2024-01-30T17:40:00.000352+0300 mon.mon-01 [ERR]     pg 3.29 is stuck undersized for 41m, current state active+undersized, last acting [5,0]
-2024-01-30T17:40:00.000355+0300 mon.mon-01 [ERR]     pg 3.2a is stuck undersized for 41m, current state active+undersized, last acting [4,2]
-2024-01-30T17:40:00.000359+0300 mon.mon-01 [ERR]     pg 3.2b is stuck undersized for 41m, current state active+undersized, last acting [2,0]
-2024-01-30T17:40:00.000363+0300 mon.mon-01 [ERR]     pg 3.2c is stuck undersized for 41m, current state active+undersized, last acting [4,5]
-2024-01-30T17:40:00.000367+0300 mon.mon-01 [ERR]     pg 3.2d is stuck undersized for 41m, current state active+undersized, last acting [5,4]
-2024-01-30T17:40:00.000371+0300 mon.mon-01 [ERR]     pg 3.2e is stuck undersized for 41m, current state active+undersized, last acting [2,0]
-2024-01-30T17:40:00.000374+0300 mon.mon-01 [ERR]     pg 3.2f is stuck undersized for 41m, current state active+undersized, last acting [0,5]
-2024-01-30T17:40:00.000378+0300 mon.mon-01 [ERR]     pg 3.30 is stuck undersized for 41m, current state active+undersized+degraded, last acting [4,2]
-2024-01-30T17:40:00.000382+0300 mon.mon-01 [ERR]     pg 3.31 is stuck undersized for 41m, current state active+undersized, last acting [5,0]
-2024-01-30T17:40:00.000386+0300 mon.mon-01 [ERR]     pg 3.32 is stuck undersized for 41m, current state active+undersized, last acting [5,0]
-2024-01-30T17:40:00.000390+0300 mon.mon-01 [ERR]     pg 3.33 is stuck undersized for 41m, current state active+undersized, last acting [5,0]
-2024-01-30T17:40:00.000394+0300 mon.mon-01 [ERR]     pg 3.34 is stuck undersized for 41m, current state active+undersized, last acting [4,2]
-2024-01-30T17:40:00.000398+0300 mon.mon-01 [ERR]     pg 3.35 is stuck undersized for 41m, current state active+undersized, last acting [0,2]
-2024-01-30T17:40:00.000401+0300 mon.mon-01 [ERR]     pg 3.36 is stuck undersized for 41m, current state active+undersized, last acting [0,5]
-2024-01-30T17:40:00.000405+0300 mon.mon-01 [ERR]     pg 3.37 is stuck undersized for 41m, current state active+undersized, last acting [0,5]
-2024-01-30T17:40:00.000410+0300 mon.mon-01 [ERR]     pg 3.38 is stuck undersized for 41m, current state active+undersized, last acting [5,0]
-2024-01-30T17:40:00.000413+0300 mon.mon-01 [ERR]     pg 3.39 is stuck undersized for 41m, current state active+undersized, last acting [0,5]
-2024-01-30T17:40:00.000417+0300 mon.mon-01 [ERR]     pg 3.3a is stuck undersized for 41m, current state active+undersized, last acting [0,2]
-2024-01-30T17:40:00.000421+0300 mon.mon-01 [ERR]     pg 3.3b is stuck undersized for 41m, current state active+undersized, last acting [2,0]
-2024-01-30T17:40:00.000425+0300 mon.mon-01 [ERR]     pg 3.3c is stuck undersized for 41m, current state active+undersized, last acting [4,2]
-2024-01-30T17:40:00.000429+0300 mon.mon-01 [ERR]     pg 3.3d is stuck undersized for 41m, current state active+undersized, last acting [5,4]
-2024-01-30T17:40:00.000435+0300 mon.mon-01 [ERR]     pg 3.3e is stuck undersized for 41m, current state active+undersized, last acting [5,0]
-2024-01-30T17:40:00.000440+0300 mon.mon-01 [ERR]     pg 3.3f is stuck undersized for 41m, current state active+undersized, last acting [4,2]
-2024-01-30T17:40:00.000446+0300 mon.mon-01 [ERR]     pg 4.1 is stuck undersized for 41m, current state active+undersized, last acting [4,2]
-2024-01-30T17:40:00.000452+0300 mon.mon-01 [ERR]     pg 4.8 is stuck undersized for 41m, current state active+undersized, last acting [0,5]
-2024-01-30T17:40:00.000457+0300 mon.mon-01 [ERR]     pg 4.a is stuck undersized for 41m, current state active+undersized, last acting [4,5]
-2024-01-30T17:40:00.000464+0300 mon.mon-01 [ERR]     pg 4.b is stuck undersized for 41m, current state active+undersized+degraded, last acting [2,4]
-2024-01-30T17:40:00.000470+0300 mon.mon-01 [ERR]     pg 4.c is stuck undersized for 41m, current state active+undersized+degraded, last acting [4,5]
-2024-01-30T17:40:00.000475+0300 mon.mon-01 [ERR]     pg 4.d is stuck undersized for 41m, current state active+undersized+degraded, last acting [4,5]
-2024-01-30T17:40:00.000481+0300 mon.mon-01 [ERR]     pg 4.e is stuck undersized for 41m, current state active+undersized+degraded, last acting [4,2]
-2024-01-30T17:40:00.000486+0300 mon.mon-01 [ERR]     pg 4.f is stuck undersized for 41m, current state active+undersized+degraded, last acting [2,4]
-2024-01-30T17:50:00.000153+0300 mon.mon-01 [ERR] overall HEALTH_ERR Failed to apply 3 service(s): ceph-exporter,crash,node-exporter; 1 hosts fail cephadm check; 1 stray host(s) with 2 daemon(s) not managed by cephadm; Module 'cephadm' has failed: 'osd-01.example.com'; 1 osds exist in the crush map but not in the osdmap; Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T18:00:00.000114+0300 mon.mon-01 [ERR] overall HEALTH_ERR Failed to apply 3 service(s): ceph-exporter,crash,node-exporter; 1 hosts fail cephadm check; 1 stray host(s) with 2 daemon(s) not managed by cephadm; Module 'cephadm' has failed: 'osd-01.example.com'; 1 osds exist in the crush map but not in the osdmap; Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T18:10:00.000134+0300 mon.mon-01 [ERR] overall HEALTH_ERR Failed to apply 3 service(s): ceph-exporter,crash,node-exporter; 1 hosts fail cephadm check; 1 stray host(s) with 2 daemon(s) not managed by cephadm; Module 'cephadm' has failed: 'osd-01.example.com'; 1 osds exist in the crush map but not in the osdmap; Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T18:13:02.721512+0300 mon.mon-01 [INF] Health check cleared: OSD_ORPHAN (was: 1 osds exist in the crush map but not in the osdmap)
-2024-01-30T18:14:58.470989+0300 mon.mon-01 [WRN] Health check failed: 1 osds exist in the crush map but not in the osdmap (OSD_ORPHAN)
-2024-01-30T18:15:32.855011+0300 mon.mon-01 [WRN] Health check update: 2 osds exist in the crush map but not in the osdmap (OSD_ORPHAN)
-2024-01-30T18:16:05.115630+0300 mon.mon-01 [WRN] Health check update: 1 osds exist in the crush map but not in the osdmap (OSD_ORPHAN)
-2024-01-30T18:16:19.481256+0300 mon.mon-01 [WRN] Health check update: 2 osds exist in the crush map but not in the osdmap (OSD_ORPHAN)
-2024-01-30T18:20:00.000160+0300 mon.mon-01 [ERR] Health detail: HEALTH_ERR Failed to apply 3 service(s): ceph-exporter,crash,node-exporter; 1 hosts fail cephadm check; 1 stray host(s) with 2 daemon(s) not managed by cephadm; Module 'cephadm' has failed: 'osd-01.example.com'; 2 osds exist in the crush map but not in the osdmap; Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T18:20:00.000190+0300 mon.mon-01 [ERR] [WRN] CEPHADM_APPLY_SPEC_FAIL: Failed to apply 3 service(s): ceph-exporter,crash,node-exporter
-2024-01-30T18:20:00.000194+0300 mon.mon-01 [ERR]     ceph-exporter: 'osd-01.example.com'
-2024-01-30T18:20:00.000198+0300 mon.mon-01 [ERR]     crash: 'osd-01.example.com'
-2024-01-30T18:20:00.000203+0300 mon.mon-01 [ERR]     node-exporter: 'osd-01.example.com'
-2024-01-30T18:20:00.000207+0300 mon.mon-01 [ERR] [WRN] CEPHADM_HOST_CHECK_FAILED: 1 hosts fail cephadm check
-2024-01-30T18:20:00.000212+0300 mon.mon-01 [ERR]     host osd-01.example.com (10.10.10.13) failed check: Can't communicate with remote host `10.10.10.13`, possibly because the host is not reachable or python3 is not installed on the host. [Errno 110] Connect call failed ('10.10.10.13', 22)
-2024-01-30T18:20:00.000216+0300 mon.mon-01 [ERR] [WRN] CEPHADM_STRAY_HOST: 1 stray host(s) with 2 daemon(s) not managed by cephadm
-2024-01-30T18:20:00.000219+0300 mon.mon-01 [ERR]     stray host osd-01.example.com has 2 stray daemons: ['osd.1', 'osd.3']
-2024-01-30T18:20:00.000224+0300 mon.mon-01 [ERR] [ERR] MGR_MODULE_ERROR: Module 'cephadm' has failed: 'osd-01.example.com'
-2024-01-30T18:20:00.000228+0300 mon.mon-01 [ERR]     Module 'cephadm' has failed: 'osd-01.example.com'
-2024-01-30T18:20:00.000232+0300 mon.mon-01 [ERR] [WRN] OSD_ORPHAN: 2 osds exist in the crush map but not in the osdmap
-2024-01-30T18:20:00.000236+0300 mon.mon-01 [ERR]     osd.1 exists in crush map but not in osdmap
-2024-01-30T18:20:00.000240+0300 mon.mon-01 [ERR]     osd.3 exists in crush map but not in osdmap
-2024-01-30T18:20:00.000244+0300 mon.mon-01 [ERR] [WRN] PG_DEGRADED: Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-2024-01-30T18:20:00.000248+0300 mon.mon-01 [ERR]     pg 2.8 is stuck undersized for 81m, current state active+undersized, last acting [0,2]
-2024-01-30T18:20:00.000252+0300 mon.mon-01 [ERR]     pg 2.9 is stuck undersized for 81m, current state active+undersized+degraded, last acting [5,0]
-2024-01-30T18:20:00.000256+0300 mon.mon-01 [ERR]     pg 2.a is stuck undersized for 81m, current state active+undersized, last acting [5,0]
-2024-01-30T18:20:00.000260+0300 mon.mon-01 [ERR]     pg 2.b is stuck undersized for 81m, current state active+undersized, last acting [4,2]
-2024-01-30T18:20:00.000264+0300 mon.mon-01 [ERR]     pg 2.c is stuck undersized for 81m, current state active+undersized+degraded, last acting [5,0]
-2024-01-30T18:20:00.000268+0300 mon.mon-01 [ERR]     pg 2.d is stuck undersized for 81m, current state active+undersized, last acting [0,5]
-2024-01-30T18:20:00.000271+0300 mon.mon-01 [ERR]     pg 2.e is stuck undersized for 81m, current state active+undersized, last acting [2,0]
-2024-01-30T18:20:00.000275+0300 mon.mon-01 [ERR]     pg 3.8 is stuck undersized for 81m, current state active+undersized, last acting [5,0]
-2024-01-30T18:20:00.000279+0300 mon.mon-01 [ERR]     pg 3.9 is stuck undersized for 81m, current state active+undersized, last acting [0,2]
-2024-01-30T18:20:00.000283+0300 mon.mon-01 [ERR]     pg 3.a is stuck undersized for 81m, current state active+undersized, last acting [0,5]
-2024-01-30T18:20:00.000287+0300 mon.mon-01 [ERR]     pg 3.b is stuck undersized for 81m, current state active+undersized, last acting [2,4]
-2024-01-30T18:20:00.000291+0300 mon.mon-01 [ERR]     pg 3.c is stuck undersized for 81m, current state active+undersized, last acting [0,5]
-2024-01-30T18:20:00.000295+0300 mon.mon-01 [ERR]     pg 3.d is stuck undersized for 81m, current state active+undersized, last acting [0,2]
-2024-01-30T18:20:00.000299+0300 mon.mon-01 [ERR]     pg 3.f is stuck undersized for 81m, current state active+undersized, last acting [0,2]
-2024-01-30T18:20:00.000302+0300 mon.mon-01 [ERR]     pg 3.22 is stuck undersized for 81m, current state active+undersized, last acting [5,4]
-2024-01-30T18:20:00.000307+0300 mon.mon-01 [ERR]     pg 3.24 is stuck undersized for 81m, current state active+undersized, last acting [2,0]
-2024-01-30T18:20:00.000311+0300 mon.mon-01 [ERR]     pg 3.25 is stuck undersized for 81m, current state active+undersized, last acting [5,0]
-2024-01-30T18:20:00.000315+0300 mon.mon-01 [ERR]     pg 3.26 is stuck undersized for 81m, current state active+undersized, last acting [4,5]
-2024-01-30T18:20:00.000319+0300 mon.mon-01 [ERR]     pg 3.27 is stuck undersized for 81m, current state active+undersized, last acting [5,4]
-2024-01-30T18:20:00.000322+0300 mon.mon-01 [ERR]     pg 3.28 is stuck undersized for 81m, current state active+undersized, last acting [5,0]
-2024-01-30T18:20:00.000326+0300 mon.mon-01 [ERR]     pg 3.29 is stuck undersized for 81m, current state active+undersized, last acting [5,0]
-2024-01-30T18:20:00.000330+0300 mon.mon-01 [ERR]     pg 3.2a is stuck undersized for 81m, current state active+undersized, last acting [4,2]
-2024-01-30T18:20:00.000335+0300 mon.mon-01 [ERR]     pg 3.2b is stuck undersized for 81m, current state active+undersized, last acting [2,0]
-2024-01-30T18:20:00.000338+0300 mon.mon-01 [ERR]     pg 3.2c is stuck undersized for 81m, current state active+undersized, last acting [4,5]
-2024-01-30T18:20:00.000342+0300 mon.mon-01 [ERR]     pg 3.2d is stuck undersized for 81m, current state active+undersized, last acting [5,4]
-2024-01-30T18:20:00.000346+0300 mon.mon-01 [ERR]     pg 3.2e is stuck undersized for 81m, current state active+undersized, last acting [2,0]
-2024-01-30T18:20:00.000349+0300 mon.mon-01 [ERR]     pg 3.2f is stuck undersized for 81m, current state active+undersized, last acting [0,5]
-2024-01-30T18:20:00.000353+0300 mon.mon-01 [ERR]     pg 3.30 is stuck undersized for 81m, current state active+undersized+degraded, last acting [4,2]
-2024-01-30T18:20:00.000360+0300 mon.mon-01 [ERR]     pg 3.31 is stuck undersized for 81m, current state active+undersized, last acting [5,0]
-2024-01-30T18:20:00.000363+0300 mon.mon-01 [ERR]     pg 3.32 is stuck undersized for 81m, current state active+undersized, last acting [5,0]
-2024-01-30T18:20:00.000367+0300 mon.mon-01 [ERR]     pg 3.33 is stuck undersized for 81m, current state active+undersized, last acting [5,0]
-2024-01-30T18:20:00.000371+0300 mon.mon-01 [ERR]     pg 3.34 is stuck undersized for 81m, current state active+undersized, last acting [4,2]
-2024-01-30T18:20:00.000375+0300 mon.mon-01 [ERR]     pg 3.35 is stuck undersized for 81m, current state active+undersized, last acting [0,2]
-2024-01-30T18:20:00.000378+0300 mon.mon-01 [ERR]     pg 3.36 is stuck undersized for 81m, current state active+undersized, last acting [0,5]
-2024-01-30T18:20:00.000382+0300 mon.mon-01 [ERR]     pg 3.37 is stuck undersized for 81m, current state active+undersized, last acting [0,5]
-2024-01-30T18:20:00.000393+0300 mon.mon-01 [ERR]     pg 3.38 is stuck undersized for 81m, current state active+undersized, last acting [5,0]
-2024-01-30T18:20:00.000397+0300 mon.mon-01 [ERR]     pg 3.39 is stuck undersized for 81m, current state active+undersized, last acting [0,5]
-2024-01-30T18:20:00.000401+0300 mon.mon-01 [ERR]     pg 3.3a is stuck undersized for 81m, current state active+undersized, last acting [0,2]
-2024-01-30T18:20:00.000404+0300 mon.mon-01 [ERR]     pg 3.3b is stuck undersized for 81m, current state active+undersized, last acting [2,0]
-2024-01-30T18:20:00.000408+0300 mon.mon-01 [ERR]     pg 3.3c is stuck undersized for 81m, current state active+undersized, last acting [4,2]
-2024-01-30T18:20:00.000412+0300 mon.mon-01 [ERR]     pg 3.3d is stuck undersized for 81m, current state active+undersized, last acting [5,4]
-2024-01-30T18:20:00.000416+0300 mon.mon-01 [ERR]     pg 3.3e is stuck undersized for 81m, current state active+undersized, last acting [5,0]
-2024-01-30T18:20:00.000420+0300 mon.mon-01 [ERR]     pg 3.3f is stuck undersized for 81m, current state active+undersized, last acting [4,2]
-2024-01-30T18:20:00.000424+0300 mon.mon-01 [ERR]     pg 4.1 is stuck undersized for 81m, current state active+undersized, last acting [4,2]
-2024-01-30T18:20:00.000428+0300 mon.mon-01 [ERR]     pg 4.8 is stuck undersized for 81m, current state active+undersized, last acting [0,5]
-2024-01-30T18:20:00.000432+0300 mon.mon-01 [ERR]     pg 4.a is stuck undersized for 81m, current state active+undersized, last acting [4,5]
-2024-01-30T18:20:00.000436+0300 mon.mon-01 [ERR]     pg 4.b is stuck undersized for 81m, current state active+undersized+degraded, last acting [2,4]
-2024-01-30T18:20:00.000439+0300 mon.mon-01 [ERR]     pg 4.c is stuck undersized for 81m, current state active+undersized+degraded, last acting [4,5]
-2024-01-30T18:20:00.000444+0300 mon.mon-01 [ERR]     pg 4.d is stuck undersized for 81m, current state active+undersized+degraded, last acting [4,5]
-2024-01-30T18:20:00.000447+0300 mon.mon-01 [ERR]     pg 4.e is stuck undersized for 81m, current state active+undersized+degraded, last acting [4,2]
-2024-01-30T18:20:00.000567+0300 mon.mon-01 [ERR]     pg 4.f is stuck undersized for 81m, current state active+undersized+degraded, last acting [2,4]
-2024-01-30T18:30:00.000128+0300 mon.mon-01 [ERR] overall HEALTH_ERR Failed to apply 3 service(s): ceph-exporter,crash,node-exporter; 1 hosts fail cephadm check; 1 stray host(s) with 2 daemon(s) not managed by cephadm; Module 'cephadm' has failed: 'osd-01.example.com'; 2 osds exist in the crush map but not in the osdmap; Degraded data redundancy: 45/135 objects degraded (33.333%), 32 pgs degraded, 113 pgs undersized
-
-```
