@@ -611,6 +611,407 @@ HEALTH_WARN 2 osds down; 1 host (2 osds) down; Degraded data redundancy: 45/135 
 [root@mon-01 ~]# 
 ```
 
+Сначала проверим, какой OSD не работает, и удалим его из кластера Ceph, используя команду:
+```bash
+ceph osd tree
+```
+```
+[root@mon-01 ~]# ceph osd tree
+ID  CLASS  WEIGHT   TYPE NAME        STATUS  REWEIGHT  PRI-AFF
+-1         0.05878  root default                              
+-5         0.01959      host osd-01                           
+ 2    hdd  0.00980          osd.2      down   1.00000  1.00000
+ 4    hdd  0.00980          osd.4      down   1.00000  1.00000
+-3         0.01959      host osd-02                           
+ 0    hdd  0.00980          osd.0        up   1.00000  1.00000
+ 3    hdd  0.00980          osd.3        up   1.00000  1.00000
+-7         0.01959      host osd-03                           
+ 1    hdd  0.00980          osd.1        up   1.00000  1.00000
+ 5    hdd  0.00980          osd.5        up   1.00000  1.00000
+[root@mon-01 ~]# 
+```
+
+Теперь используйте следующие команды:
+```bash
+ceph osd out osd.2
+ceph osd out osd.4
+```
+```
+[root@mon-01 ~]# ceph osd out osd.2
+marked out osd.2. 
+[root@mon-01 ~]# ceph osd out osd.4
+marked out osd.4. 
+[root@mon-01 ~]# 
+```
+
+```bash
+ceph osd down osd.2
+ceph osd down osd.4
+```
+```
+[root@mon-01 ~]# ceph osd down osd.2
+osd.2 is already down. 
+[root@mon-01 ~]# ceph osd down osd.4
+osd.4 is already down. 
+[root@mon-01 ~]# 
+```
+
+Удалим их:
+```bash
+ceph osd rm osd.2
+ceph osd rm osd.4
+```
+```
+[root@mon-01 ~]# ceph osd rm osd.2
+removed osd.2
+[root@mon-01 ~]# ceph osd rm osd.4
+removed osd.4
+[root@mon-01 ~]# 
+```
+
+Удалим их из crush map:
+```bash
+ceph osd crush rm osd.2
+ceph osd crush rm osd.4
+```
+```
+[root@mon-01 ~]# ceph osd crush rm osd.2
+removed item id 2 name 'osd.2' from crush map
+[root@mon-01 ~]# ceph osd crush rm osd.4
+removed item id 4 name 'osd.4' from crush map
+[root@mon-01 ~]# 
+```
+
+Удалим авторизацию (это должно предотвратить проблемы с «couldn’t add new osd with same number»):
+```bash
+ceph auth del osd.2
+ceph auth del osd.4
+```
+```
+[root@mon-01 ~]# ceph auth del osd.2
+[root@mon-01 ~]# ceph auth del osd.4
+[root@mon-01 ~]# 
+```
+
+Удаляем osd:
+```bash
+ceph osd destroy 2 --yes-i-really-mean-it
+ceph osd destroy 4 --yes-i-really-mean-it
+```
+```
+[root@mon-01 ~]# ceph osd destroy 2 --yes-i-really-mean-it
+osd.2 does not exist
+[root@mon-01 ~]# ceph osd destroy 4 --yes-i-really-mean-it
+osd.4 does not exist
+[root@mon-01 ~]# 
+```
+
+Проверим состояние кластера Ceph:
+```bash
+ceph -s
+```
+```
+[root@mon-01 ~]# ceph -s
+  cluster:
+    id:     e57803a8-bffa-11ee-9484-d00d101a26da
+    health: HEALTH_WARN
+            Degraded data redundancy: 33/135 objects degraded (24.444%), 19 pgs degraded, 218 pgs undersized
+ 
+  services:
+    mon: 3 daemons, quorum mon-01,mon-03,mon-02 (age 2m)
+    mgr: mon-01.yjbfsu(active, since 44m), standbys: mon-03.tskoha, mon-02.ecbmlu
+    mds: 1/1 daemons up
+    osd: 4 osds: 4 up (since 11m), 4 in (since 10m); 87 remapped pgs
+ 
+  data:
+    volumes: 1/1 healthy
+    pools:   4 pools, 305 pgs
+    objects: 45 objects, 6.8 MiB
+    usage:   308 MiB used, 40 GiB / 40 GiB avail
+    pgs:     33/135 objects degraded (24.444%)
+             12/135 objects misplaced (8.889%)
+             199 active+undersized
+             87  active+clean+remapped
+             19  active+undersized+degraded
+ 
+[root@mon-01 ~]# 
+```
+Добавим в ceph кластер новый подготовленный osd хост osd-04:
+```bash
+ceph orch host add osd-04.example.com
+```
+```
+[root@mon-01 ~]# ceph orch host add osd-04.example.com
+Added host 'osd-04.example.com' with addr '10.10.10.23'
+[root@mon-01 ~]# 
+```
+
+Подключим диски vdb и vdc нового хоста osd-04:
+```bash
+ceph orch daemon add osd osd-04.example.com:/dev/vdb,/dev/vdc
+```
+```
+[root@mon-01 ~]# ceph orch daemon add osd osd-04.example.com:/dev/vdb
+Created osd(s) 2,4 on host 'osd-04.example.com'
+[root@mon-01 ~]# ceph orch daemon add osd osd-04.example.com:/dev/vdc
+Created no osd(s) on host osd-04.example.com; already created?
+[root@mon-01 ~]# 
+```
+Список osd кластера:
+```bash
+ceph osd tree
+```
+[root@mon-01 ~]# ceph osd tree
+ID  CLASS  WEIGHT   TYPE NAME        STATUS  REWEIGHT  PRI-AFF
+-1         0.05878  root default                              
+-5               0      host osd-01                           
+-3         0.01959      host osd-02                           
+ 0    hdd  0.00980          osd.0        up   1.00000  1.00000
+ 3    hdd  0.00980          osd.3        up   1.00000  1.00000
+-7         0.01959      host osd-03                           
+ 1    hdd  0.00980          osd.1        up   1.00000  1.00000
+ 5    hdd  0.00980          osd.5        up   1.00000  1.00000
+-9         0.01959      host osd-04                           
+ 2    hdd  0.00980          osd.2        up   1.00000  1.00000
+ 4    hdd  0.00980          osd.4        up   1.00000  1.00000
+[root@mon-01 ~]# 
+
+Список хостов кластера:
+```bash
+ceph orch host ls
+```
+```
+[root@mon-01 ~]# ceph orch host ls
+HOST                ADDR         LABELS  STATUS   
+mds-01.example.com  10.10.10.22                   
+mon-01.example.com  10.10.10.8   _admin           
+mon-02.example.com  10.10.10.16                   
+mon-03.example.com  10.10.10.19                   
+osd-01.example.com  10.10.10.14          Offline  
+osd-02.example.com  10.10.10.26                   
+osd-03.example.com  10.10.10.9                    
+osd-04.example.com  10.10.10.23                   
+8 hosts in cluster
+[root@mon-01 ~]# 
+```
+
+Как видим, в ceph кластер добавился хост osd-04 с дисками vdb и vdc. 
+
+Хост osd-01 находится в состоянии Offline.
+
+Отключим демоны, работающие с хостом osd-01:
+```bash
+ceph orch host drain osd-01.example.com
+```
+```
+[root@mon-01 ~]# ceph orch host drain osd-01.example.com
+Scheduled to remove the following daemons from host 'osd-01.example.com'
+type                 id             
+-------------------- ---------------
+ceph-exporter        osd-01         
+crash                osd-01         
+node-exporter        osd-01         
+[root@mon-01 ~]# 
+```
+
+НЕ НУЖНО!!!
+[root@mon-01 ~]# ceph orch host maintenance enter osd-01.example.com
+Daemons for Ceph cluster e57803a8-bffa-11ee-9484-d00d101a26da stopped on host osd-01.example.com. Host osd-01.example.com moved to maintenance mode
+[root@mon-01 ~]# 
+
+Так как хост osd-01 недоступен, удалим его из кластера:
+```bash
+ceph orch host rm osd-01.example.com --offline --force
+```
+```
+[root@mon-01 ~]# ceph orch host rm osd-01.example.com --offline --force
+Removed offline host 'osd-01.example.com'
+[root@mon-01 ~]# 
+```
+
+Список хостов ceph кластера:
+```bash
+ceph orch host ls
+```
+```
+[root@mon-01 ~]# ceph orch host ls
+HOST                ADDR         LABELS  STATUS  
+mds-01.example.com  10.10.10.22                  
+mon-01.example.com  10.10.10.8   _admin          
+mon-02.example.com  10.10.10.16                  
+mon-03.example.com  10.10.10.19                  
+osd-02.example.com  10.10.10.26                  
+osd-03.example.com  10.10.10.9                   
+osd-04.example.com  10.10.10.23                  
+7 hosts in cluster
+[root@mon-01 ~]# 
+```
+
+Как видим, хоста osd-01 отсутствует в списке хостов кластера.
+
+Список osd в ceph кластере:
+```bash
+ceph osd tree
+```
+```
+[root@mon-01 ~]# ceph osd tree
+ID  CLASS  WEIGHT   TYPE NAME        STATUS  REWEIGHT  PRI-AFF
+-1         0.05878  root default                              
+-5               0      host osd-01                           
+-3         0.01959      host osd-02                           
+ 0    hdd  0.00980          osd.0        up   1.00000  1.00000
+ 3    hdd  0.00980          osd.3        up   1.00000  1.00000
+-7         0.01959      host osd-03                           
+ 1    hdd  0.00980          osd.1        up   1.00000  1.00000
+ 5    hdd  0.00980          osd.5        up   1.00000  1.00000
+-9         0.01959      host osd-04                           
+ 2    hdd  0.00980          osd.2        up   1.00000  1.00000
+ 4    hdd  0.00980          osd.4        up   1.00000  1.00000
+[root@mon-01 ~]# 
+```
+Состояние ceph кластера:
+```bash
+ceph health detail
+```
+```
+[root@mon-01 ~]# ceph health detail
+HEALTH_OK
+[root@mon-01 ~]# 
+```
+
+```bash
+ceph -s
+```
+```
+[root@mon-01 ~]# ceph -s
+  cluster:
+    id:     e57803a8-bffa-11ee-9484-d00d101a26da
+    health: HEALTH_OK
+ 
+  services:
+    mon: 3 daemons, quorum mon-01,mon-03,mon-02 (age 81m)
+    mgr: mon-01.yjbfsu(active, since 81m), standbys: mon-03.tskoha, mon-02.ecbmlu
+    mds: 1/1 daemons up
+    osd: 6 osds: 6 up (since 72m), 6 in (since 2h)
+ 
+  data:
+    volumes: 1/1 healthy
+    pools:   4 pools, 305 pgs
+    objects: 45 objects, 6.8 MiB
+    usage:   409 MiB used, 60 GiB / 60 GiB avail
+    pgs:     305 active+clean
+ 
+[root@mon-01 ~]# 
+```
+
+Проверим наличие созданных файлов:
+```bash
+cat /mnt/ceph_rbd/rbd.txt
+cat /mnt/cephfs/cephfs.txt
+```
+```
+[root@client-01 ~]# cat /mnt/ceph_rbd/rbd.txt 
+Hello RBD
+[root@client-01 ~]# cat /mnt/cephfs/cephfs.txt 
+Hello CephFS
+[root@client-01 ~]# 
+```
+
+[root@mon-01 ~]# ceph -w
+  cluster:
+    id:     e57803a8-bffa-11ee-9484-d00d101a26da
+    health: HEALTH_OK
+ 
+  services:
+    mon: 3 daemons, quorum mon-01,mon-03,mon-02 (age 81m)
+    mgr: mon-01.yjbfsu(active, since 81m), standbys: mon-03.tskoha, mon-02.ecbmlu
+    mds: 1/1 daemons up
+    osd: 6 osds: 6 up (since 72m), 6 in (since 2h)
+ 
+  data:
+    volumes: 1/1 healthy
+    pools:   4 pools, 305 pgs
+    objects: 45 objects, 6.8 MiB
+    usage:   409 MiB used, 60 GiB / 60 GiB avail
+    pgs:     305 active+clean
+ 
+...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ```
 [root@mon-01 ~]# ceph orch host ls
 HOST                ADDR         LABELS  STATUS   
@@ -838,250 +1239,6 @@ cat /mnt/cephfs/cephfs.txt
 
 
 
-
-
-
-[root@mon-01 ~]# ceph osd tree
-ID  CLASS  WEIGHT   TYPE NAME        STATUS  REWEIGHT  PRI-AFF
--1         0.05878  root default                              
--5         0.01959      host osd-01                           
- 2    hdd  0.00980          osd.2        up   1.00000  1.00000
- 4    hdd  0.00980          osd.4        up   1.00000  1.00000
--3         0.01959      host osd-02                           
- 0    hdd  0.00980          osd.0        up   1.00000  1.00000
- 3    hdd  0.00980          osd.3        up   1.00000  1.00000
--7         0.01959      host osd-03                           
- 1    hdd  0.00980          osd.1        up   1.00000  1.00000
- 5    hdd  0.00980          osd.5        up   1.00000  1.00000
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph osd tree
-ID  CLASS  WEIGHT   TYPE NAME        STATUS  REWEIGHT  PRI-AFF
--1         0.05878  root default                              
--5         0.01959      host osd-01                           
- 2    hdd  0.00980          osd.2      down   1.00000  1.00000
- 4    hdd  0.00980          osd.4      down   1.00000  1.00000
--3         0.01959      host osd-02                           
- 0    hdd  0.00980          osd.0        up   1.00000  1.00000
- 3    hdd  0.00980          osd.3        up   1.00000  1.00000
--7         0.01959      host osd-03                           
- 1    hdd  0.00980          osd.1        up   1.00000  1.00000
- 5    hdd  0.00980          osd.5        up   1.00000  1.00000
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph osd out osd.2
-marked out osd.2. 
-[root@mon-01 ~]# ceph osd out osd.4
-marked out osd.4. 
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph osd down osd.2
-osd.2 is already down. 
-[root@mon-01 ~]# ceph osd down osd.4
-osd.4 is already down. 
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph osd rm osd.2
-removed osd.2
-[root@mon-01 ~]# ceph osd rm osd.4
-removed osd.4
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph osd crush rm osd.2
-removed item id 2 name 'osd.2' from crush map
-[root@mon-01 ~]# ceph osd crush rm osd.4
-removed item id 4 name 'osd.4' from crush map
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph auth del osd.2
-[root@mon-01 ~]# ceph auth del osd.4
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph osd destroy 2 --yes-i-really-mean-it
-osd.2 does not exist
-[root@mon-01 ~]# ceph osd destroy 4 --yes-i-really-mean-it
-osd.4 does not exist
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph -s
-  cluster:
-    id:     e57803a8-bffa-11ee-9484-d00d101a26da
-    health: HEALTH_WARN
-            Degraded data redundancy: 33/135 objects degraded (24.444%), 19 pgs degraded, 218 pgs undersized
- 
-  services:
-    mon: 3 daemons, quorum mon-01,mon-03,mon-02 (age 2m)
-    mgr: mon-01.yjbfsu(active, since 44m), standbys: mon-03.tskoha, mon-02.ecbmlu
-    mds: 1/1 daemons up
-    osd: 4 osds: 4 up (since 11m), 4 in (since 10m); 87 remapped pgs
- 
-  data:
-    volumes: 1/1 healthy
-    pools:   4 pools, 305 pgs
-    objects: 45 objects, 6.8 MiB
-    usage:   308 MiB used, 40 GiB / 40 GiB avail
-    pgs:     33/135 objects degraded (24.444%)
-             12/135 objects misplaced (8.889%)
-             199 active+undersized
-             87  active+clean+remapped
-             19  active+undersized+degraded
- 
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph orch host add osd-04.example.com
-Added host 'osd-04.example.com' with addr '10.10.10.23'
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph orch daemon add osd osd-04.example.com:/dev/vdb
-Created osd(s) 2,4 on host 'osd-04.example.com'
-[root@mon-01 ~]# ceph orch daemon add osd osd-04.example.com:/dev/vdc
-Created no osd(s) on host osd-04.example.com; already created?
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph osd tree
-ID  CLASS  WEIGHT   TYPE NAME        STATUS  REWEIGHT  PRI-AFF
--1         0.05878  root default                              
--5               0      host osd-01                           
--3         0.01959      host osd-02                           
- 0    hdd  0.00980          osd.0        up   1.00000  1.00000
- 3    hdd  0.00980          osd.3        up   1.00000  1.00000
--7         0.01959      host osd-03                           
- 1    hdd  0.00980          osd.1        up   1.00000  1.00000
- 5    hdd  0.00980          osd.5        up   1.00000  1.00000
--9         0.01959      host osd-04                           
- 2    hdd  0.00980          osd.2        up   1.00000  1.00000
- 4    hdd  0.00980          osd.4        up   1.00000  1.00000
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph orch host ls
-HOST                ADDR         LABELS  STATUS   
-mds-01.example.com  10.10.10.22                   
-mon-01.example.com  10.10.10.8   _admin           
-mon-02.example.com  10.10.10.16                   
-mon-03.example.com  10.10.10.19                   
-osd-01.example.com  10.10.10.14          Offline  
-osd-02.example.com  10.10.10.26                   
-osd-03.example.com  10.10.10.9                    
-osd-04.example.com  10.10.10.23                   
-8 hosts in cluster
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph orch host drain osd-01.example.com
-Scheduled to remove the following daemons from host 'osd-01.example.com'
-type                 id             
--------------------- ---------------
-ceph-exporter        osd-01         
-crash                osd-01         
-node-exporter        osd-01         
-[root@mon-01 ~]# 
-
-
-НЕ НУЖНО!!!
-[root@mon-01 ~]# ceph orch host maintenance enter osd-01.example.com
-Daemons for Ceph cluster e57803a8-bffa-11ee-9484-d00d101a26da stopped on host osd-01.example.com. Host osd-01.example.com moved to maintenance mode
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph orch host rm osd-01.example.com --offline --force
-Removed offline host 'osd-01.example.com'
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph orch host ls
-HOST                ADDR         LABELS  STATUS  
-mds-01.example.com  10.10.10.22                  
-mon-01.example.com  10.10.10.8   _admin          
-mon-02.example.com  10.10.10.16                  
-mon-03.example.com  10.10.10.19                  
-osd-02.example.com  10.10.10.26                  
-osd-03.example.com  10.10.10.9                   
-osd-04.example.com  10.10.10.23                  
-7 hosts in cluster
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph osd tree
-ID  CLASS  WEIGHT   TYPE NAME        STATUS  REWEIGHT  PRI-AFF
--1         0.05878  root default                              
--5               0      host osd-01                           
--3         0.01959      host osd-02                           
- 0    hdd  0.00980          osd.0        up   1.00000  1.00000
- 3    hdd  0.00980          osd.3        up   1.00000  1.00000
--7         0.01959      host osd-03                           
- 1    hdd  0.00980          osd.1        up   1.00000  1.00000
- 5    hdd  0.00980          osd.5        up   1.00000  1.00000
--9         0.01959      host osd-04                           
- 2    hdd  0.00980          osd.2        up   1.00000  1.00000
- 4    hdd  0.00980          osd.4        up   1.00000  1.00000
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph health detail
-HEALTH_OK
-[root@mon-01 ~]# 
-
-
-[root@mon-01 ~]# ceph -s
-  cluster:
-    id:     e57803a8-bffa-11ee-9484-d00d101a26da
-    health: HEALTH_OK
- 
-  services:
-    mon: 3 daemons, quorum mon-01,mon-03,mon-02 (age 81m)
-    mgr: mon-01.yjbfsu(active, since 81m), standbys: mon-03.tskoha, mon-02.ecbmlu
-    mds: 1/1 daemons up
-    osd: 6 osds: 6 up (since 72m), 6 in (since 2h)
- 
-  data:
-    volumes: 1/1 healthy
-    pools:   4 pools, 305 pgs
-    objects: 45 objects, 6.8 MiB
-    usage:   409 MiB used, 60 GiB / 60 GiB avail
-    pgs:     305 active+clean
- 
-[root@mon-01 ~]# 
-
-
-
-[root@client-01 ~]# cat /mnt/ceph_rbd/rbd.txt 
-Hello RBD
-[root@client-01 ~]# cat /mnt/cephfs/cephfs.txt 
-Hello CephFS
-[root@client-01 ~]# 
-
-
-[root@mon-01 ~]# ceph -w
-  cluster:
-    id:     e57803a8-bffa-11ee-9484-d00d101a26da
-    health: HEALTH_OK
- 
-  services:
-    mon: 3 daemons, quorum mon-01,mon-03,mon-02 (age 81m)
-    mgr: mon-01.yjbfsu(active, since 81m), standbys: mon-03.tskoha, mon-02.ecbmlu
-    mds: 1/1 daemons up
-    osd: 6 osds: 6 up (since 72m), 6 in (since 2h)
- 
-  data:
-    volumes: 1/1 healthy
-    pools:   4 pools, 305 pgs
-    objects: 45 objects, 6.8 MiB
-    usage:   409 MiB used, 60 GiB / 60 GiB avail
-    pgs:     305 active+clean
- 
-...
 
 
 
