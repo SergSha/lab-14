@@ -11,7 +11,7 @@ resource "yandex_compute_instance" "instances" {
   hostname    = var.vm_name
   platform_id = var.platform_id
   zone        = var.zone
-  #folder_id   = var.folder_id
+  folder_id   = var.folder_id
   resources {
     cores         = var.cpu
     memory        = var.memory

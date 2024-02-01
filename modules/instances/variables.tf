@@ -1,6 +1,6 @@
-#variable "folder_id" {
-#  type = string
-#}
+variable "folder_id" {
+  type = string
+}
 
 variable "vpc_name" {
   description = "VPC name"
