@@ -44,6 +44,9 @@ README.md
 ```
 https://github.com/SergSha/lab-14.git
 ```
+Схема:
+
+<img src="pics/infra.png" alt="infra.png" />
 
 Для начала получаем OAUTH токен:
 ```
