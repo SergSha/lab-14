@@ -4,13 +4,31 @@ flush ruleset
 
 table ip filter {
 
-        chain NGINX_INP {
-                tcp dport { 80, 443, 8080 } ct state new counter accept
+        chain CEPH_INP {
+{% if inventory_hostname in groups['mon'] %}
+                tcp dport { 3300,6789,6800-7300,8443,8765,9283 } ct state new counter accept
+{% endif %}
+{% if inventory_hostname in ( groups['mds'] + groups['osd'] ) %}
+                tcp dport { 6800-7300 } ct state new counter accept
+{% endif %}
         }
-        chain CONSUL_INP {
-                tcp dport { 8300,8301,8302,8500,8600 } ct state new counter accept
-                udp dport { 8301,8302,8600 } ct state new counter accept
+        chain NODE_EXPORTER_INP {
+                tcp dport 9100 ct state new counter accept
         }
+        chain CEPH_EXPORTER_INP {
+                tcp dport 9926 ct state new counter accept
+        }
+{% if inventory_hostname in groups['mon'] %}
+        chain PROMETHEUS_INP {
+                tcp dport { 9093-9095 } ct state new counter accept
+                udp dport 9094 ct state new counter accept
+        }
+{% endif %}
+{% if inventory_hostname in groups['mon'] %}
+        chain GRAFANA_INP {
+                tcp dport 3000 ct state new counter accept
+        }
+{% endif %}
         chain INPUT {
                 type filter hook input priority filter; policy drop;
                 ct state invalid counter drop
@@ -19,8 +37,15 @@ table ip filter {
                 udp dport 323 counter accept
                 ip saddr {{ subnet_cidrs }} icmp type echo-request counter accept
                 ct state established,related counter accept
-                counter jump NGINX_INP
-                counter jump CONSUL_INP
+{% if inventory_hostname in ( groups['mon'] + groups['mds'] + groups['osd'] ) %}
+                counter jump CEPH_INP
+{% endif %}
+                counter jump NODE_EXPORTER_INP
+                counter jump CEPH_EXPORTER_INP
+{% if inventory_hostname in groups['mon'] %}
+                counter jump PROMETHEUS_INP
+                counter jump GRAFANA_INP
+{% endif %}
         }
 
         chain FORWARD {

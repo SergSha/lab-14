@@ -14,3 +14,4 @@
     - /usr/bin/ceph orch restart mon
     - /usr/bin/ceph telemetry enable channel perf
     - /usr/bin/ceph telemetry on --license sharing-1-0
+  run_once: true
